@@ -7,9 +7,6 @@ Route::post('/login', [AuthController::class, 'login']);
 
 // Rutas protegidas por Sanctum
 Route::middleware('auth:sanctum')->group(function () {
-    // Ruta para obtener información del usuario autenticado
     Route::get('/user', [AuthController::class, 'user']);
-
-    // Ruta para cerrar sesión
     Route::post('/logout', [AuthController::class, 'logout']);
 });

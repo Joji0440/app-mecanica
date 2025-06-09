@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class AuthTest extends TestCase
 {
@@ -37,7 +37,9 @@ class AuthTest extends TestCase
 
     public function test_authenticated_user_can_access_protected_route()
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create([
+            'password' => bcrypt('password'),
+        ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
@@ -51,7 +53,9 @@ class AuthTest extends TestCase
 
     public function test_user_can_logout()
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create([
+            'password' => bcrypt('password'),
+        ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
 

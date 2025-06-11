@@ -20,6 +20,11 @@ class RoleMiddleware
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
+        // Proteger administradores
+        if ($role === 'admin' && $request->route('user')?->hasRole('admin')) {
+            return response()->json(['message' => 'No puedes modificar o eliminar a otro administrador.'], 403);
+        }
+
         return $next($request);
     }
 }

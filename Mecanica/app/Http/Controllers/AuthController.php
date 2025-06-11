@@ -7,6 +7,11 @@ use App\Events\UserLoggedIn;
 
 class AuthController extends Controller
 {
+    public function showLoginForm()
+    {
+        return view('auth.login');
+    }
+
     public function login(Request $request)
     {
         $credentials = $request->validate([
@@ -20,15 +25,10 @@ class AuthController extends Controller
             // Despachar el evento
             event(new UserLoggedIn($user));
 
-            $token = $user->createToken('auth_token')->plainTextToken;
-
-            return response()->json([
-                'access_token' => $token,
-                'token_type' => 'Bearer',
-            ]);
+            return redirect('/')->with('user', $user->name);
         }
 
-        return response()->json(['message' => 'Invalid credentials'], 401);
+        return redirect()->back()->withErrors(['email' => 'Credenciales inválidas.']);
     }
 
     public function user(Request $request)
@@ -38,8 +38,38 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        $request->user()->tokens()->delete();
+        Auth::logout();
 
-        return response()->json(['message' => 'Logged out']);
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect('/')->with('success', 'Has cerrado sesión correctamente.');
+    }
+
+    public function showRegistrationForm()
+    {
+        return view('auth.register');
+    }
+
+    public function register(Request $request)
+    {
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|min:8|confirmed',
+        ]);
+
+        $user = \App\Models\User::create([
+            'name' => $validatedData['name'],
+            'email' => $validatedData['email'],
+            'password' => bcrypt($validatedData['password']),
+        ]);
+
+        // Asignar rol por defecto
+        $user->assignRole('user');
+
+        Auth::login($user);
+
+        return redirect('/')->with('success', 'Registro exitoso. ¡Bienvenido!');
     }
 }

@@ -16,13 +16,19 @@ class RolesAndPermissionsSeeder extends Seeder
     {
         // Crear roles
         $admin = Role::create(['name' => 'admin']);
+        $moderator = Role::create(['name' => 'moderator']);
         $user = Role::create(['name' => 'user']);
 
         // Crear permisos
         Permission::create(['name' => 'manage users']);
         Permission::create(['name' => 'view dashboard']);
+        Permission::create(['name' => 'assign admins']);
+        Permission::create(['name' => 'delete users']);
 
         // Asignar permisos al rol de admin
-        $admin->givePermissionTo(['manage users', 'view dashboard']);
+        $admin->givePermissionTo(['manage users', 'view dashboard', 'delete users']);
+
+        // Asignar permisos al rol de moderator
+        $moderator->givePermissionTo(['assign admins']);
     }
 }

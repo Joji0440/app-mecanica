@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Authentication Defaults
@@ -40,6 +39,7 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+        // Otros guards...
     ],
 
     /*
@@ -111,5 +111,4 @@ return [
     */
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
-
 ];

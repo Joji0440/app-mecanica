@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
-class RoleMiddleware
+class CheckRole
 {
     /**
      * Handle an incoming request.
@@ -16,16 +16,12 @@ class RoleMiddleware
      */
     public function handle(Request $request, Closure $next, $role): Response
     {
-        if (!Auth::check() || !$request->user()->hasRole($role)) {
-            return response()->json(['message' => 'Forbidden'], 403);
-        }
+        $user = Auth::user();
 
-        // Proteger administradores
-        if ($role === 'admin' && $request->route('user')?->hasRole('admin')) {
-            return response()->json(['message' => 'No puedes modificar o eliminar a otro administrador.'], 403);
+        if (! $user || ! $user->hasRole($role)) {
+            abort(403, 'Unauthorized action.');
         }
 
         return $next($request);
     }
 }
-

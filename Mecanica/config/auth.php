@@ -39,7 +39,6 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
-        // Otros guards...
     ],
 
     /*

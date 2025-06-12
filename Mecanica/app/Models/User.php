@@ -9,39 +9,13 @@ class User extends Authenticatable
 {
     use HasRoles;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
-    ];
+    protected $guard_name = 'web'; // Esto asegura que el guard sea 'web'
 
     /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
+     * Método para depurar los roles del usuario.
      */
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
-
-    /**
-     * The authentication guards for the user.
-     *
-     * @var array
-     */
-    protected $guards = [
-        'web' => [
-            'driver' => 'session',
-            'provider' => 'users',
-        ],
-        // Otros guards...
-    ];
-
-    protected $guard_name = 'web'; // Asegúrate de que esto esté presente
+    public function debugRoles()
+    {
+        return $this->roles->pluck('name'); // Devuelve los nombres de los roles asignados al usuario.
+    }
 }

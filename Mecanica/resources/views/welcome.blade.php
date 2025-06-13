@@ -12,8 +12,13 @@
         <p>Tu solución para problemas mecánicos desde la comodidad de tu hogar.</p>
         @auth
             <p style="margin-top: 10px;">Bienvenido, {{ Auth::user()->name }}.</p>
-            @if(Auth::user()->hasRole('admin'))
-                <a href="{{ route('admin.users') }}" style="padding: 10px 20px; background-color: #007BFF; color: #fff; text-decoration: none; border-radius: 5px; margin-right: 10px;">Administrar Usuarios</a>
+            @if(Auth::user()->hasAnyRole(['admin', 'moderator']))
+                <a href="{{ route('dashboard') }}" style="padding: 10px 20px; background-color: #28A745; color: #fff; text-decoration: none; border-radius: 5px; margin-right: 10px;">Dashboard</a>
+                @if(Auth::user()->hasRole('admin'))
+                    <a href="{{ route('admin.users') }}" style="padding: 10px 20px; background-color: #007BFF; color: #fff; text-decoration: none; border-radius: 5px;">Administrar Usuarios</a>
+                @elseif(Auth::user()->hasRole('moderator'))
+                    <a href="{{ route('manage.users') }}" style="padding: 10px 20px; background-color: #007BFF; color: #fff; text-decoration: none; border-radius: 5px;">Gestionar Roles</a>
+                @endif
             @endif
             <form action="{{ route('logout') }}" method="POST" style="display: inline;">
                 @csrf

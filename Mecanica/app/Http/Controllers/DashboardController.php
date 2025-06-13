@@ -13,7 +13,11 @@ class DashboardController extends Controller
      */
     public function index()
     {
-        // Aquí puedes agregar lógica para mostrar datos en el dashboard.
-        return view('dashboard'); // Asegúrate de que esta vista exista en resources/views.
+        $totalUsers = \App\Models\User::count();
+        $admins = \App\Models\User::role('admin')->count();
+        $moderators = \App\Models\User::role('moderator')->count();
+        $users = \App\Models\User::role('user')->count();
+
+        return view('dashboard', compact('totalUsers', 'admins', 'moderators', 'users'));
     }
 }

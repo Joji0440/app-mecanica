@@ -18,22 +18,16 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/admin/users', function () {
-    $user = Auth::user();
-
-    if (! $user || ! $user->hasRole('admin')) {
-        abort(403, 'Unauthorized action.');
-    }
-
-    return app(App\Http\Controllers\AdminController::class)->index();
-})->name('admin.users');
-
 Route::middleware(['auth'])->group(function () {
-    Route::get('/test-role', function () {
-        $user = Auth::user();
-        if ($user && $user->hasRole('admin')) {
-            return 'El usuario tiene el rol de administrador.';
-        }
-        return 'El usuario no tiene el rol de administrador.';
-    });
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Rutas para el administrador
+    Route::get('/admin/users', [AdminController::class, 'listUsers'])->name('admin.users');
+    Route::get('/admin/users/{user}/edit', [AdminController::class, 'edit'])->name('admin.users.edit');
+    Route::put('/admin/users/{user}', [AdminController::class, 'update'])->name('admin.users.update');
+    Route::delete('/admin/users/{user}', [AdminController::class, 'destroy'])->name('admin.users.destroy');
+
+    // Rutas para el moderador
+    Route::get('/manage-users', [UserController::class, 'manage'])->name('manage.users');
+    Route::post('/assign-role/{user}', [UserController::class, 'assignRole'])->name('assign.role');
 });

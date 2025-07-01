@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Spatie\Permission\Traits\HasRoles;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasFactory, HasRoles;
+    use HasFactory, HasRoles, HasApiTokens;
 
     protected $guard_name = 'web';
 
@@ -22,10 +23,18 @@ class User extends Authenticatable
     ];
 
     /**
-     * Método para depurar los roles del usuario.
+     * Los atributos que deben ser ocultados para serialización.
      */
-    public function debugRoles()
-    {
-        return $this->roles->pluck('name'); // Devuelve los nombres de los roles asignados al usuario.
-    }
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
+    /**
+     * Los atributos que deben ser convertidos.
+     */
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+    ];
 }

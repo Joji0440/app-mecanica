@@ -16,7 +16,9 @@ class CheckRole
         $user = Auth::user();
 
         if (!$user || !$user->hasAnyRole($roles)) {
-            abort(403, 'No tienes permiso para acceder a esta página.');
+            return response()->json([
+                'message' => 'No tienes permiso para acceder a este recurso.'
+            ], 403);
         }
 
         return $next($request);

@@ -13,14 +13,19 @@ app-mecanica/
 
 ## 🚀 Inicio Rápido
 
-### Prerrequisitos
-- PHP 8.1+
-- Composer
-- Node.js 18+
-- MySQL/PostgreSQL
-- Git
+### 📖 Guías de Instalación por Sistema Operativo
 
-### Instalación
+**¿Primera vez configurando el proyecto?** Sigue la guía específica para tu sistema:
+
+- 🪟 **Windows**: [Guía Completa Windows](docs/WINDOWS_SETUP.md)
+- 🍎 **macOS**: [Guía Completa macOS](docs/MACOS_SETUP.md)  
+- 🐧 **Linux**: [Guía Completa Linux](docs/LINUX_SETUP.md)
+- 📋 **Instalación Detallada**: [Guía Completa](INSTALLATION_GUIDE.md)
+- 🛠️ **Problemas?**: [Solución de Problemas](TROUBLESHOOTING.md)
+
+### ⚡ Configuración Rápida
+
+Si ya tienes todas las dependencias instaladas:
 
 1. **Clonar el repositorio**
 ```bash
@@ -28,22 +33,29 @@ git clone [URL-DEL-REPOSITORIO]
 cd app-mecanica
 ```
 
-2. **Configurar Backend (Laravel)**
+2. **Configuración automática**
 ```bash
+# Windows
+.\setup.ps1
+
+# Linux/macOS  
+chmod +x setup.sh && ./setup.sh
+```
+
+3. **Configuración manual**
+```bash
+# Backend
 cd Mecanica
 composer install
 cp .env.example .env
 php artisan key:generate
 php artisan migrate
 php artisan db:seed
-php artisan serve
-```
 
-3. **Configurar Frontend (React)**
-```bash
+# Frontend
 cd ../vistas
 npm install
-npm run dev
+cp .env.example .env
 ```
 
 ## 🔧 Desarrollo
@@ -127,13 +139,31 @@ El sistema usa JWT tokens con Laravel Sanctum:
 - Logout: `POST /api/logout`
 - User: `GET /api/user`
 
+## 📚 Documentación
+
+- 📖 **[Guía de Instalación Completa](INSTALLATION_GUIDE.md)** - Instalación paso a paso
+- 🚀 **[Inicio Rápido](QUICK_START.md)** - Para desarrolladores experimentados
+- 🛠️ **[Solución de Problemas](TROUBLESHOOTING.md)** - Errores comunes y soluciones
+- 🤝 **[Guía de Contribución](CONTRIBUTING.md)** - Cómo contribuir al proyecto
+
+### Guías por Sistema Operativo
+- 🪟 **[Windows Setup](docs/WINDOWS_SETUP.md)** - Configuración específica para Windows
+- 🍎 **[macOS Setup](docs/MACOS_SETUP.md)** - Configuración específica para macOS  
+- 🐧 **[Linux Setup](docs/LINUX_SETUP.md)** - Configuración específica para Linux
+
+### Documentación de Componentes
+- **Backend**: Ver `Mecanica/README.md` - API Laravel
+- **Frontend**: Ver `vistas/README.md` - React App
+
 ## 🤝 Contribuir
 
-1. Fork el proyecto
-2. Crear rama de feature (`git checkout -b feature/AmazingFeature`)
-3. Commit cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abrir Pull Request
+1. **Fork** el proyecto
+2. **Crear rama** de feature (`git checkout -b feature/AmazingFeature`)
+3. **Commit** cambios (`git commit -m 'Add some AmazingFeature'`)
+4. **Push** a la rama (`git push origin feature/AmazingFeature`)
+5. **Abrir Pull Request**
+
+Ver **[Guía de Contribución](CONTRIBUTING.md)** para más detalles.
 
 ## 📝 Licencia
 

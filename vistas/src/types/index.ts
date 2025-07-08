@@ -38,10 +38,32 @@ export interface ApiResponse<T = any> {
 }
 
 export interface DashboardData {
-  total_users: number;
-  admins: number;
-  moderators: number;
-  users: number;
+  stats: {
+    total_users: number;
+    admin_users: number;
+    manager_users: number;
+    regular_users: number;
+    users_this_month: number;
+    users_today: number;
+  };
+  recent_users: User[];
+  user_growth: {
+    labels: string[];
+    data: number[];
+  };
+  role_distribution: {
+    admin: number;
+    manager: number;
+    user: number;
+  };
+  system_info: {
+    php_version: string;
+    laravel_version: string;
+    database_connection: string;
+    environment: string;
+    debug_mode: boolean;
+    timezone: string;
+  };
 }
 
 export interface AuthContextType {

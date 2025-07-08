@@ -18,9 +18,17 @@ Route::middleware('auth:sanctum')->group(function () {
     // Autenticación
     Route::get('/user', [AuthController::class, 'user']);
     Route::post('/logout', [AuthController::class, 'logout']);
+    Route::post('/logout-all', [AuthController::class, 'logoutAll']);
     
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index']);
+    Route::get('/notifications', [DashboardController::class, 'getNotifications']);
+    Route::put('/notifications/{id}/read', [DashboardController::class, 'markNotificationAsRead']);
+    
+    // Perfil de usuario
+    Route::get('/profile', [UserController::class, 'profile']);
+    Route::put('/profile', [UserController::class, 'updateProfile']);
+    Route::get('/activity', [UserController::class, 'getActivity']);
     
     // Rutas para administradores
     Route::prefix('admin')->middleware('role:admin')->group(function () {
@@ -28,11 +36,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/users/{user}', [AdminController::class, 'show']);
         Route::put('/users/{user}', [AdminController::class, 'update']);
         Route::delete('/users/{user}', [AdminController::class, 'destroy']);
+        Route::post('/users/{user}/assign-role', [AdminController::class, 'assignRole']);
+        Route::post('/users/{user}/remove-role', [AdminController::class, 'removeRole']);
+        Route::get('/stats', [AdminController::class, 'getStats']);
     });
     
-    // Rutas para moderadores
+    // Rutas para moderadores y admins
     Route::prefix('manage')->middleware('role:moderator|admin')->group(function () {
         Route::get('/users', [UserController::class, 'manage']);
         Route::post('/users/{user}/assign-role', [UserController::class, 'assignRole']);
+        Route::post('/users/{user}/toggle-status', [UserController::class, 'toggleStatus']);
     });
 });

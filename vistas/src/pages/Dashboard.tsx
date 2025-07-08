@@ -74,7 +74,7 @@ export default function Dashboard() {
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
                       <div className="w-8 h-8 bg-indigo-500 rounded-md flex items-center justify-center">
-                        <span className="text-white font-semibold">U</span>
+                        <span className="text-white font-semibold">👥</span>
                       </div>
                     </div>
                     <div className="ml-5 w-0 flex-1">
@@ -83,7 +83,7 @@ export default function Dashboard() {
                           Total Usuarios
                         </dt>
                         <dd className="text-lg font-medium text-gray-900">
-                          {dashboardData.total_users}
+                          {dashboardData.stats.total_users}
                         </dd>
                       </dl>
                     </div>
@@ -96,7 +96,7 @@ export default function Dashboard() {
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
                       <div className="w-8 h-8 bg-green-500 rounded-md flex items-center justify-center">
-                        <span className="text-white font-semibold">A</span>
+                        <span className="text-white font-semibold">👑</span>
                       </div>
                     </div>
                     <div className="ml-5 w-0 flex-1">
@@ -105,7 +105,7 @@ export default function Dashboard() {
                           Administradores
                         </dt>
                         <dd className="text-lg font-medium text-gray-900">
-                          {dashboardData.admins}
+                          {dashboardData.stats.admin_users}
                         </dd>
                       </dl>
                     </div>
@@ -118,16 +118,16 @@ export default function Dashboard() {
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
                       <div className="w-8 h-8 bg-yellow-500 rounded-md flex items-center justify-center">
-                        <span className="text-white font-semibold">M</span>
+                        <span className="text-white font-semibold">🛠️</span>
                       </div>
                     </div>
                     <div className="ml-5 w-0 flex-1">
                       <dl>
                         <dt className="text-sm font-medium text-gray-500 truncate">
-                          Moderadores
+                          Managers
                         </dt>
                         <dd className="text-lg font-medium text-gray-900">
-                          {dashboardData.moderators}
+                          {dashboardData.stats.manager_users}
                         </dd>
                       </dl>
                     </div>
@@ -140,7 +140,7 @@ export default function Dashboard() {
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
                       <div className="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center">
-                        <span className="text-white font-semibold">U</span>
+                        <span className="text-white font-semibold">👤</span>
                       </div>
                     </div>
                     <div className="ml-5 w-0 flex-1">
@@ -149,7 +149,7 @@ export default function Dashboard() {
                           Usuarios
                         </dt>
                         <dd className="text-lg font-medium text-gray-900">
-                          {dashboardData.users}
+                          {dashboardData.stats.regular_users}
                         </dd>
                       </dl>
                     </div>

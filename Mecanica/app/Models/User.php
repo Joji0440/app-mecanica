@@ -20,6 +20,8 @@ class User extends Authenticatable
         'name', 
         'email', 
         'password',
+        'last_login_at',
+        'suspended_at',
     ];
 
     /**
@@ -35,6 +37,8 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'last_login_at' => 'datetime',
+        'suspended_at' => 'datetime',
         'password' => 'hashed',
     ];
 }

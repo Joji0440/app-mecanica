@@ -7,19 +7,19 @@ use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 
-class RolesAndPermissionsSeeder extends Seeder
+class RolesAndPermissionsSeederNew extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        // Limpiar tablas existentes (comentado para testing con datos existentes)
-        // \DB::table('role_has_permissions')->truncate();
-        // \DB::table('model_has_permissions')->truncate();
-        // \DB::table('model_has_roles')->truncate();
-        // Role::truncate();
-        // Permission::truncate();
+        // Limpiar tablas existentes
+        \DB::table('role_has_permissions')->truncate();
+        \DB::table('model_has_permissions')->truncate();
+        \DB::table('model_has_roles')->truncate();
+        Role::truncate();
+        Permission::truncate();
 
         // Crear permisos
         $permissions = [
@@ -32,13 +32,13 @@ class RolesAndPermissionsSeeder extends Seeder
         ];
 
         foreach ($permissions as $permission) {
-            Permission::firstOrCreate(['name' => $permission]);
+            Permission::create(['name' => $permission]);
         }
 
         // Crear roles
-        $adminRole = Role::firstOrCreate(['name' => 'admin']);
-        $managerRole = Role::firstOrCreate(['name' => 'manager']);
-        $userRole = Role::firstOrCreate(['name' => 'user']);
+        $adminRole = Role::create(['name' => 'admin']);
+        $managerRole = Role::create(['name' => 'manager']);
+        $userRole = Role::create(['name' => 'user']);
 
         // Asignar permisos a roles
         $adminRole->givePermissionTo(['create-user', 'read-user', 'update-user', 'delete-user', 'manage-roles', 'manage-permissions']);

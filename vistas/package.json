@@ -10,7 +10,9 @@
     "lint:fix": "eslint . --fix",
     "type-check": "tsc --noEmit",
     "preview": "vite preview",
-    "test": "echo \"No tests specified yet\" && exit 0"
+    "test": "echo \"No tests specified yet\" && exit 0",
+    "serve": "python3 server.py",
+    "serve:node": "node server.js"
   },
   "dependencies": {
     "@tailwindcss/forms": "^0.5.10",

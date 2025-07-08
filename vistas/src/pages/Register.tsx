@@ -31,7 +31,7 @@ export default function Register() {
         password,
         password_confirmation: passwordConfirmation
       });
-      navigate('/dashboard');
+      navigate('/');
     } catch {
       setError('Error al registrar usuario');
     } finally {
@@ -128,12 +128,18 @@ export default function Register() {
             </button>
           </div>
 
-          <div className="text-center">
+          <div className="text-center space-y-2">
             <Link 
               to="/login" 
-              className="text-indigo-600 hover:text-indigo-500"
+              className="text-indigo-600 hover:text-indigo-500 block"
             >
               ¿Ya tienes cuenta? Inicia sesión aquí
+            </Link>
+            <Link 
+              to="/" 
+              className="text-gray-600 hover:text-gray-500 text-sm block"
+            >
+              ← Volver al inicio
             </Link>
           </div>
         </form>

@@ -9,6 +9,25 @@ use Illuminate\Support\Facades\Route;
 // Endpoint de salud (público)
 Route::get('/health', [HealthController::class, 'check']);
 
+// Endpoint temporal de debug para usuarios (sin autenticación)
+Route::get('/debug/users', function() {
+    try {
+        $users = \App\Models\User::all();
+        return response()->json([
+            'message' => 'Debug: usuarios obtenidos exitosamente',
+            'count' => $users->count(),
+            'data' => $users
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => 'Debug error',
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine()
+        ], 500);
+    }
+});
+
 // Rutas públicas (sin autenticación)
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -30,10 +49,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/profile', [UserController::class, 'updateProfile']);
     Route::get('/activity', [UserController::class, 'getActivity']);
     
-    // Rutas para administradores únicamente
-    Route::prefix('admin')->middleware(['role:admin'])->group(function () {
+    // Rutas para administradores
+    Route::prefix('admin')->group(function () {
         Route::get('/users', [AdminController::class, 'listUsers']);
-        Route::post('/users', [AdminController::class, 'store']);
         Route::get('/users/{user}', [AdminController::class, 'show']);
         Route::put('/users/{user}', [AdminController::class, 'update']);
         Route::delete('/users/{user}', [AdminController::class, 'destroy']);
@@ -42,8 +60,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/stats', [AdminController::class, 'getStats']);
     });
     
-    // Rutas para managers y admins (gestión limitada)
-    Route::prefix('manage')->middleware(['role:manager|admin'])->group(function () {
+    // Rutas para moderadores y admins
+    Route::prefix('manage')->middleware('role:moderator|admin')->group(function () {
         Route::get('/users', [UserController::class, 'manage']);
         Route::post('/users/{user}/assign-role', [UserController::class, 'assignRole']);
         Route::post('/users/{user}/toggle-status', [UserController::class, 'toggleStatus']);

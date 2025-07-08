@@ -14,24 +14,51 @@ class AdminController extends Controller
      */
     public function listUsers(Request $request)
     {
-        $perPage = $request->get('per_page', 15);
-        $search = $request->get('search');
+        try {
+            // Obtener parámetros de paginación y filtros
+            $perPage = $request->get('per_page', 15);
+            $search = $request->get('search');
+            $role = $request->get('role');
 
-        $query = User::with('roles');
+            $query = User::with('roles');
 
-        if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
-            });
+            // Aplicar filtro de búsqueda
+            if ($search) {
+                $query->where(function($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                      ->orWhere('email', 'like', "%{$search}%");
+                });
+            }
+
+            // Aplicar filtro de rol
+            if ($role) {
+                $query->role($role);
+            }
+
+            // Ordenar por fecha de creación (más recientes primero)
+            $query->orderBy('created_at', 'desc');
+
+            // Paginar resultados
+            $users = $query->paginate($perPage);
+
+            return response()->json([
+                'message' => 'Usuarios obtenidos exitosamente',
+                'data' => $users->items(),
+                'pagination' => [
+                    'current_page' => $users->currentPage(),
+                    'total_pages' => $users->lastPage(),
+                    'total_items' => $users->total(),
+                    'per_page' => $users->perPage(),
+                    'from' => $users->firstItem(),
+                    'to' => $users->lastItem()
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener usuarios',
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        $users = $query->paginate($perPage);
-
-        return response()->json([
-            'message' => 'Lista de usuarios obtenida exitosamente',
-            'data' => $users
-        ]);
     }
 
     /**
@@ -192,5 +219,52 @@ class AdminController extends Controller
             'message' => 'Estadísticas obtenidas exitosamente',
             'data' => $stats
         ]);
+    }
+
+    /**
+     * Crear un nuevo usuario
+     */
+    public function store(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8|confirmed',
+            'roles' => 'sometimes|array',
+            'roles.*' => 'exists:roles,name'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Error de validación',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            // Crear el usuario
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => bcrypt($request->password),
+            ]);
+
+            // Asignar roles si se proporcionan, sino asignar rol 'user' por defecto
+            if ($request->has('roles') && !empty($request->roles)) {
+                $user->assignRole($request->roles);
+            } else {
+                $user->assignRole('user');
+            }
+
+            return response()->json([
+                'message' => 'Usuario creado exitosamente',
+                'data' => $user->fresh()->load('roles')
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al crear usuario',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }

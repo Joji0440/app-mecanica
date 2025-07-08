@@ -1,0 +1,27 @@
+[90m= [39m[
+    [
+      "[34mid[39m" => [35m1[39m,
+      "[34mname[39m" => "[32mcreate-user[39m",
+    ],
+    [
+      "[34mid[39m" => [35m2[39m,
+      "[34mname[39m" => "[32mread-user[39m",
+    ],
+    [
+      "[34mid[39m" => [35m3[39m,
+      "[34mname[39m" => "[32mupdate-user[39m",
+    ],
+    [
+      "[34mid[39m" => [35m4[39m,
+      "[34mname[39m" => "[32mdelete-user[39m",
+    ],
+    [
+      "[34mid[39m" => [35m5[39m,
+      "[34mname[39m" => "[32mmanage-roles[39m",
+    ],
+    [
+      "[34mid[39m" => [35m6[39m,
+      "[34mname[39m" => "[32mmanage-permissions[39m",
+    ],
+  ]
+

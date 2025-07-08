@@ -18,7 +18,7 @@ export default function Login() {
 
     try {
       await login(email, password);
-      navigate('/dashboard');
+      navigate('/');
     } catch {
       setError('Credenciales inválidas');
     } finally {
@@ -84,12 +84,18 @@ export default function Login() {
             </button>
           </div>
 
-          <div className="text-center">
+          <div className="text-center space-y-2">
             <Link 
               to="/register" 
-              className="text-indigo-600 hover:text-indigo-500"
+              className="text-indigo-600 hover:text-indigo-500 block"
             >
               ¿No tienes cuenta? Regístrate aquí
+            </Link>
+            <Link 
+              to="/" 
+              className="text-gray-600 hover:text-gray-500 text-sm block"
+            >
+              ← Volver al inicio
             </Link>
           </div>
         </form>

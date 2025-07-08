@@ -1,0 +1,90 @@
+version: '3.8'
+
+services:
+  # Frontend React
+  frontend:
+    build:
+      context: ./vistas
+      dockerfile: ../docker/frontend.Dockerfile
+    container_name: mecanica-frontend
+    ports:
+      - "80:80"
+    environment:
+      - VITE_API_URL=http://localhost:8000/api
+    depends_on:
+      - backend
+    networks:
+      - mecanica-network
+
+  # Backend Laravel
+  backend:
+    build:
+      context: ./Mecanica
+      dockerfile: ../docker/backend.Dockerfile
+    container_name: mecanica-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_HOST=database
+      - DB_DATABASE=mecanica_db
+      - DB_USERNAME=mecanica2025
+      - DB_PASSWORD=ubuntumecanica
+      - REDIS_HOST=redis
+    volumes:
+      - ./Mecanica:/var/www
+      - ./Mecanica/storage:/var/www/storage
+    depends_on:
+      - database
+      - redis
+    networks:
+      - mecanica-network
+
+  # Base de datos PostgreSQL
+  database:
+    image: postgres:15-alpine
+    container_name: mecanica-database
+    environment:
+      - POSTGRES_DB=mecanica_db
+      - POSTGRES_USER=mecanica2025
+      - POSTGRES_PASSWORD=ubuntumecanica
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    networks:
+      - mecanica-network
+
+  # Redis para cache y sessions
+  redis:
+    image: redis:7-alpine
+    container_name: mecanica-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - mecanica-network
+
+  # Nginx como Load Balancer (opcional)
+  nginx:
+    image: nginx:alpine
+    container_name: mecanica-nginx
+    ports:
+      - "443:443"
+    volumes:
+      - ./docker/nginx-lb.conf:/etc/nginx/conf.d/default.conf
+      - ./ssl:/etc/nginx/ssl
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - mecanica-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  mecanica-network:
+    driver: bridge

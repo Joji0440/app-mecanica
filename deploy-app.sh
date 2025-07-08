@@ -10,7 +10,7 @@ echo "========================================="
 PROJECT_DIR="/var/www/mecanica"
 BACKEND_DIR="$PROJECT_DIR/backend"
 FRONTEND_DIR="$PROJECT_DIR/frontend"
-DOMAIN="tu-servidor.com"
+DOMAIN="192.168.0.103"
 
 print_status() {
     echo -e "\033[0;32m✅ $1\033[0m"
@@ -41,6 +41,10 @@ sudo -u www-data php artisan route:cache
 echo "🗄️  Ejecutando migraciones..."
 sudo -u www-data php artisan migrate --force
 sudo -u www-data php artisan db:seed --class=RolesAndPermissionsSeeder --force
+
+# 4.1. Crear enlace simbólico para storage
+echo "🔗 Creando enlace simbólico para storage..."
+sudo -u www-data php artisan storage:link
 
 # 5. Configurar permisos
 echo "🔐 Configurando permisos..."
@@ -76,6 +80,15 @@ server {
 
     # Backend - Laravel API
     location /api {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+
+    # Laravel Storage Files
+    location /storage {
         proxy_pass http://127.0.0.1:8000;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;

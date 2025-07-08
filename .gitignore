@@ -134,3 +134,20 @@ composer.lock
 /phpunit.xml
 /phpunit.xml.dist
 .phpunit.result.cache
+
+# Archivos con nombres problemáticos para Windows
+*::*
+*\**
+*<*
+*>*
+*|*
+*?*
+*"*
+# Archivos temporales de comandos PHP/Artisan mal ejecutados
+*Model*::*
+*Permission*::*
+*Role*::*
+*User*::*
+*Table(*)*
+*echo*
+*foreach*

@@ -1,7 +1,7 @@
 import axios from 'axios';
-import type { AuthResponse, LoginRequest, RegisterRequest, User, ApiResponse, DashboardData } from '../types';
+import type { AuthResponse, LoginRequest, RegisterRequest, User, ApiResponse, DashboardData, UserStats } from '../types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8001/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
 // Crear instancia de axios
 const api = axios.create({
@@ -70,6 +70,47 @@ export const dashboardAPI = {
   // Obtener datos del dashboard
   getDashboardData: async (): Promise<DashboardData> => {
     const response = await api.get<ApiResponse<DashboardData>>('/dashboard');
+    return response.data.data!;
+  },
+};
+
+export const userManagementAPI = {
+  // Obtener usuarios
+  getUsers: async (): Promise<User[]> => {
+    const response = await api.get<ApiResponse<User[]>>('/users');
+    return response.data.data!;
+  },
+
+  // Actualizar usuario (el backend decide qué puede hacer cada rol)
+  updateUser: async (userId: number, userData: { name: string; email: string }): Promise<User> => {
+    const response = await api.put<ApiResponse<User>>(`/users/${userId}`, userData);
+    return response.data.data!;
+  },
+
+  // Asignar rol (el backend valida permisos)
+  assignRole: async (userId: number, role: string): Promise<void> => {
+    await api.post(`/users/${userId}/assign-role`, { role });
+  },
+
+  // Remover rol (el backend valida permisos)
+  removeRole: async (userId: number, role: string): Promise<void> => {
+    await api.post(`/users/${userId}/remove-role`, { role });
+  },
+
+  // Eliminar usuario (el backend valida permisos)
+  deleteUser: async (userId: number): Promise<void> => {
+    await api.delete(`/users/${userId}`);
+  },
+
+  // Crear usuario (el backend valida permisos)
+  createUser: async (userData: { name: string; email: string; password: string; role: string }): Promise<User> => {
+    const response = await api.post<ApiResponse<User>>('/users', userData);
+    return response.data.data!;
+  },
+
+  // Obtener estadísticas (el backend decide qué estadísticas devolver)
+  getStats: async (): Promise<UserStats> => {
+    const response = await api.get<ApiResponse<UserStats>>('/stats');
     return response.data.data!;
   },
 };

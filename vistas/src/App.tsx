@@ -1,10 +1,12 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import RoleProtectedRoute from './components/RoleProtectedRoute';
 import Welcome from './pages/Welcome';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
+import UserProfile from './pages/UserProfile';
 import UserManagement from './pages/UserManagement';
 
 function App() {
@@ -16,19 +18,27 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route 
-            path="/dashboard" 
+            path="/user-profile" 
             element={
               <ProtectedRoute>
-                <Dashboard />
+                <UserProfile />
               </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/dashboard" 
+            element={
+              <RoleProtectedRoute allowedRoles={['admin', 'manager']}>
+                <Dashboard />
+              </RoleProtectedRoute>
             } 
           />
           <Route 
             path="/user-management" 
             element={
-              <ProtectedRoute>
+              <RoleProtectedRoute allowedRoles={['admin', 'manager']}>
                 <UserManagement />
-              </ProtectedRoute>
+              </RoleProtectedRoute>
             } 
           />
         </Routes>

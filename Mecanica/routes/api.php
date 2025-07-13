@@ -30,22 +30,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/profile', [UserController::class, 'updateProfile']);
     Route::get('/activity', [UserController::class, 'getActivity']);
     
-    // Rutas para administradores únicamente
-    Route::prefix('admin')->middleware(['role:admin'])->group(function () {
-        Route::get('/users', [AdminController::class, 'listUsers']);
-        Route::post('/users', [AdminController::class, 'store']);
-        Route::get('/users/{user}', [AdminController::class, 'show']);
-        Route::put('/users/{user}', [AdminController::class, 'update']);
-        Route::delete('/users/{user}', [AdminController::class, 'destroy']);
-        Route::post('/users/{user}/assign-role', [AdminController::class, 'assignRole']);
-        Route::post('/users/{user}/remove-role', [AdminController::class, 'removeRole']);
-        Route::get('/stats', [AdminController::class, 'getStats']);
-    });
-    
-    // Rutas para managers y admins (gestión limitada)
-    Route::prefix('manage')->middleware(['role:manager|admin'])->group(function () {
-        Route::get('/users', [UserController::class, 'manage']);
+    // Gestión de usuarios unificada (el backend valida permisos internamente)
+    Route::middleware(['role:admin|manager'])->group(function () {
+        Route::get('/users', [UserController::class, 'index']);
+        Route::get('/stats', [UserController::class, 'getStats']);
+        Route::post('/users', [UserController::class, 'store']);
+        Route::put('/users/{user}', [UserController::class, 'update']);
+        Route::delete('/users/{user}', [UserController::class, 'destroy']);
         Route::post('/users/{user}/assign-role', [UserController::class, 'assignRole']);
-        Route::post('/users/{user}/toggle-status', [UserController::class, 'toggleStatus']);
+        Route::post('/users/{user}/remove-role', [UserController::class, 'removeRole']);
     });
 });

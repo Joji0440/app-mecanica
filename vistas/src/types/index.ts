@@ -75,3 +75,14 @@ export interface AuthContextType {
   logout: () => void;
   isAuthenticated: boolean;
 }
+
+export interface UserStats {
+  total_users: number;
+  admin_users: number;
+  manager_users: number;
+  regular_users: number;
+  users_this_month: number;
+  users_today: number;
+  users_this_week: number;
+  active_users: number;
+}

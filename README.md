@@ -1,174 +1,259 @@
-# Mecánica Asistida en Línea
+# 🔧 Mecánica Asistida
 
-Sistema completo de mecánica asistida con backend Laravel y frontend React.
+> Sistema integral de gestión para talleres mecánicos con interfaz moderna y API robusta.
 
-## 🏗️ Arquitectura del Proyecto
+![Status](https://img.shields.io/badge/Status-Production%20Ready-green)
+![License](https://img.shields.io/badge/License-MIT-blue)
+![PHP](https://img.shields.io/badge/PHP-8.2%2B-purple)
+![React](https://img.shields.io/badge/React-18-blue)
+![Laravel](https://img.shields.io/badge/Laravel-12-red)
+
+## 📋 Descripción
+
+**Mecánica Asistida** es una aplicación web fullstack diseñada para optimizar la gestión de talleres mecánicos. Combina un backend API RESTful desarrollado en Laravel con un frontend moderno en React + TypeScript, ofreciendo una experiencia de usuario fluida y funcionalidades completas para la administración de servicios automotrices.
+
+### ✨ Características Principales
+
+- 🔐 **Autenticación Segura** - Laravel Sanctum + JWT
+- 👥 **Gestión de Usuarios** - Sistema de roles y permisos
+- 🎨 **Interfaz Moderna** - React + TypeScript + TailwindCSS
+- 🌙 **Modo Oscuro/Claro** - Toggle de tema integrado
+- 📱 **Responsive Design** - Optimizado para todos los dispositivos
+- 🔒 **HTTPS** - Certificados SSL integrados
+- ⚡ **Alta Performance** - Optimización de build y caching
+- 🛠 **API RESTful** - Endpoints bien documentados
+
+## 🏗 Arquitectura
 
 ```
-app-mecanica/
-├── Mecanica/          # Backend Laravel (API)
-├── vistas/            # Frontend React + TypeScript
-└── README.md          # Este archivo
+┌─────────────────┐    HTTPS    ┌─────────────────┐    API    ┌─────────────────┐
+│   React SPA     │ ◄─────────► │     Nginx       │ ◄───────► │   Laravel API   │
+│  (Frontend)     │             │ (Reverse Proxy) │           │   (Backend)     │
+└─────────────────┘             └─────────────────┘           └─────────┬───────┘
+                                                                        │
+                                                               ┌─────────▼───────┐
+                                                               │   PostgreSQL    │
+                                                               │  (Base de Datos)│
+                                                               └─────────────────┘
 ```
 
-## 🚀 Inicio Rápido
+## 🚀 Stack Tecnológico
 
-### 📖 Guías de Instalación por Sistema Operativo
+### Backend
+- **Framework**: Laravel 12
+- **Lenguaje**: PHP 8.2+
+- **Base de Datos**: PostgreSQL 13+
+- **Autenticación**: Laravel Sanctum
+- **Autorización**: Spatie Laravel Permission
+- **Servidor**: Nginx + PHP-FPM
 
-**¿Primera vez configurando el proyecto?** Sigue la guía específica para tu sistema:
+### Frontend
+- **Framework**: React 18
+- **Lenguaje**: TypeScript 5
+- **Build Tool**: Vite 5
+- **Estilos**: TailwindCSS 3
+- **Routing**: React Router DOM
+- **HTTP Client**: Axios
+- **Icons**: Lucide React
 
-- 🪟 **Windows**: [Guía Completa Windows](docs/WINDOWS_SETUP.md)
-- 🍎 **macOS**: [Guía Completa macOS](docs/MACOS_SETUP.md)  
-- 🐧 **Linux**: [Guía Completa Linux](docs/LINUX_SETUP.md)
-- 📋 **Instalación Detallada**: [Guía Completa](INSTALLATION_GUIDE.md)
-- 🛠️ **Problemas?**: [Solución de Problemas](TROUBLESHOOTING.md)
+### DevOps
+- **Servidor Web**: Nginx
+- **SSL/TLS**: Certificados auto-firmados
+- **SO**: Ubuntu Server 20.04+
+- **Proceso Manager**: SystemD
 
-### ⚡ Configuración Rápida
+## 📦 Instalación Rápida
 
-Si ya tienes todas las dependencias instaladas:
+### Prerrequisitos
 
-1. **Clonar el repositorio**
+- Ubuntu Server 20.04+
+- Docker (opcional)
+- Git
+
+### Opción 1: Instalación Automática
+
 ```bash
-git clone [URL-DEL-REPOSITORIO]
+# Clonar repositorio
+git clone https://github.com/Joji0440/app-mecanica.git
 cd app-mecanica
+
+# Ejecutar script de instalación
+chmod +x install.sh
+./install.sh
 ```
 
-2. **Configuración automática**
-```bash
-# Windows
-.\setup.ps1
+### Opción 2: Instalación Manual
 
-# Linux/macOS  
-chmod +x setup.sh && ./setup.sh
+Ver la [Guía de Instalación Completa](docs/installation.md) para instrucciones detalladas.
+
+### Opción 3: Deploy en Producción
+
+Ver la [Guía de Deploy](docs/deployment.md) para deployment en servidor.
+
+## 🔧 Configuración
+
+### Variables de Entorno
+
+**Backend (.env):**
+```env
+APP_NAME="Mecánica Asistida"
+APP_ENV=production
+DB_CONNECTION=pgsql
+DB_DATABASE=mecanica_production
+SANCTUM_STATEFUL_DOMAINS=tu-dominio.com
 ```
 
-3. **Configuración manual**
+**Frontend (.env.production):**
+```env
+VITE_API_URL=https://tu-dominio.com/api
+VITE_APP_URL=https://tu-dominio.com
+```
+
+## 📚 Documentación
+
+| Guía | Descripción |
+|------|-------------|
+| [📖 Instalación](docs/installation.md) | Configuración paso a paso para desarrollo |
+| [🚀 Deploy](docs/deployment.md) | Guía completa de deployment en producción |
+| [🌐 Cambio de Red](docs/network-change.md) | Migración entre redes/IPs |
+| [🏗 Arquitectura](docs/architecture.md) | Diseño técnico y componentes |
+| [📝 Uso](docs/usage.md) | Manual de usuario |
+| [🤝 Contribución](docs/contribution.md) | Guía para desarrolladores |
+
+## 🎯 Uso Rápido
+
+### 1. Acceder a la Aplicación
+
+```
+https://tu-ip-o-dominio
+```
+
+### 2. Credenciales por Defecto
+
+```
+Email: admin@mecanica.com
+Password: admin123
+```
+
+### 3. Funcionalidades Principales
+
+- **Dashboard**: Vista general del sistema
+- **Usuarios**: Gestión completa de usuarios y roles
+- **Configuración**: Personalización del sistema
+- **Reportes**: Análisis y estadísticas
+
+## 🛠 Desarrollo
+
+### Configurar Entorno Local
+
 ```bash
 # Backend
 cd Mecanica
 composer install
 cp .env.example .env
 php artisan key:generate
-php artisan migrate
-php artisan db:seed
+php artisan migrate --seed
 
 # Frontend
 cd ../vistas
 npm install
-cp .env.example .env
+npm run dev
 ```
-
-## 🔧 Desarrollo
-
-### Backend (Laravel API)
-- **Puerto**: `http://localhost:8000`
-- **API Base**: `http://localhost:8000/api`
-- **Documentación**: Ver `Mecanica/README.md`
-
-### Frontend (React)
-- **Puerto**: `http://localhost:5173`
-- **Documentación**: Ver `vistas/README.md`
-
-## 👥 Trabajo en Equipo
-
-### Estructura de Ramas
-- `main` - Rama principal (protegida)
-- `develop` - Rama de desarrollo
-- `feature/nombre-feature` - Nuevas características
-- `hotfix/nombre-fix` - Correcciones urgentes
-
-### Flujo de Trabajo
-1. Crear rama desde `develop`
-2. Desarrollar la funcionalidad
-3. Hacer commit con mensajes descriptivos
-4. Push y crear Pull Request
-5. Code Review y merge
 
 ### Comandos Útiles
 
 ```bash
-# Iniciar ambos servidores simultáneamente (desde raíz)
-# Terminal 1 - Backend
-cd Mecanica && php artisan serve
+# Desarrollo del frontend
+npm run dev          # Servidor de desarrollo
+npm run build        # Build de producción
+npm run preview      # Preview del build
 
-# Terminal 2 - Frontend  
-cd vistas && npm run dev
-
-# Build para producción
-cd vistas && npm run build
+# Backend Laravel
+php artisan serve    # Servidor de desarrollo
+php artisan migrate  # Ejecutar migraciones
+php artisan test     # Ejecutar tests
 ```
 
-## 📁 Estructura Detallada
+### Testing
 
-### Backend (`/Mecanica`)
-- `app/` - Lógica de la aplicación
-- `routes/api.php` - Rutas de la API
-- `database/` - Migraciones y seeders
-- `config/` - Configuraciones
+```bash
+# Backend
+php artisan test
 
-### Frontend (`/vistas`)
-- `src/components/` - Componentes reutilizables
-- `src/pages/` - Páginas de la aplicación
-- `src/context/` - Context API (estado global)
-- `src/services/` - Servicios de API
-- `src/types/` - Tipos TypeScript
-
-## 🌐 Variables de Entorno
-
-### Backend (.env)
-```env
-APP_URL=http://localhost:8000
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=mecanica_db
-DB_USERNAME=root
-DB_PASSWORD=
+# Frontend
+npm test
 ```
 
-### Frontend (.env)
-```env
-VITE_API_URL=http://localhost:8000/api
-```
+## 📊 Estado del Proyecto
 
-## 🔐 Autenticación
+### Funcionalidades Completadas ✅
 
-El sistema usa JWT tokens con Laravel Sanctum:
-- Login: `POST /api/login`
-- Register: `POST /api/register`
-- Logout: `POST /api/logout`
-- User: `GET /api/user`
+- [x] Sistema de autenticación completo
+- [x] Gestión de usuarios y roles
+- [x] Interfaz responsive con tema claro/oscuro
+- [x] API RESTful funcional
+- [x] Deploy automatizado con HTTPS
+- [x] Documentación completa
 
-## 📚 Documentación
+### En Desarrollo 🚧
 
-- 📖 **[Guía de Instalación Completa](INSTALLATION_GUIDE.md)** - Instalación paso a paso
-- 🚀 **[Inicio Rápido](QUICK_START.md)** - Para desarrolladores experimentados
-- 🛠️ **[Solución de Problemas](TROUBLESHOOTING.md)** - Errores comunes y soluciones
-- 🤝 **[Guía de Contribución](CONTRIBUTING.md)** - Cómo contribuir al proyecto
+- [ ] Gestión de órdenes de trabajo
+- [ ] Sistema de inventario
+- [ ] Reportes avanzados
+- [ ] Notificaciones en tiempo real
 
-### Guías por Sistema Operativo
-- 🪟 **[Windows Setup](docs/WINDOWS_SETUP.md)** - Configuración específica para Windows
-- 🍎 **[macOS Setup](docs/MACOS_SETUP.md)** - Configuración específica para macOS  
-- 🐧 **[Linux Setup](docs/LINUX_SETUP.md)** - Configuración específica para Linux
+### Próximas Características 🔮
 
-### Documentación de Componentes
-- **Backend**: Ver `Mecanica/README.md` - API Laravel
-- **Frontend**: Ver `vistas/README.md` - React App
+- [ ] App móvil
+- [ ] Integración con sistemas de pago
+- [ ] API pública
+- [ ] Dashboard de analytics
 
 ## 🤝 Contribuir
 
-1. **Fork** el proyecto
-2. **Crear rama** de feature (`git checkout -b feature/AmazingFeature`)
-3. **Commit** cambios (`git commit -m 'Add some AmazingFeature'`)
-4. **Push** a la rama (`git push origin feature/AmazingFeature`)
-5. **Abrir Pull Request**
+¡Las contribuciones son bienvenidas! Ver [Guía de Contribución](docs/contribution.md).
 
-Ver **[Guía de Contribución](CONTRIBUTING.md)** para más detalles.
+### Proceso de Contribución
 
-## 📝 Licencia
+1. Fork del proyecto
+2. Crear rama feature (`git checkout -b feature/NuevaCaracteristica`)
+3. Commit cambios (`git commit -m 'Add: nueva característica'`)
+4. Push a la rama (`git push origin feature/NuevaCaracteristica`)
+5. Abrir Pull Request
 
-Este proyecto está bajo la Licencia MIT.
+## 📄 Licencia
 
-## 📞 Contacto
+Este proyecto está bajo la Licencia MIT. Ver [LICENSE](LICENSE) para más detalles.
 
-Para dudas o sugerencias, crear un issue en el repositorio.
+## 👨‍💻 Autor
+
+**Jorge** - [@Joji0440](https://github.com/Joji0440)
+
+## 🙏 Agradecimientos
+
+- Laravel Community
+- React Team
+- TailwindCSS
+- Todas las librerías open source utilizadas
+
+## 📞 Soporte
+
+- **Issues**: [GitHub Issues](https://github.com/Joji0440/app-mecanica/issues)
+- **Documentación**: [docs/](docs/)
+- **Email**: soporte@mecanica.com
+
+## 🔗 Enlaces Útiles
+
+- [Demo en Vivo](https://demo.mecanica.com) (próximamente)
+- [Documentación API](docs/api.md) (próximamente)
+- [Roadmap](https://github.com/Joji0440/app-mecanica/projects) (próximamente)
+
+---
+
+<div align="center">
+
+**🔧 Hecho con ❤️ para la comunidad automotriz**
+
+[⬆ Volver arriba](#-mecánica-asistida)
+
+</div>

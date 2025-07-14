@@ -26,6 +26,22 @@ function App() {
             } 
           />
           <Route 
+            path="/profile" 
+            element={
+              <ProtectedRoute>
+                <UserProfile />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/users" 
+            element={
+              <RoleProtectedRoute allowedRoles={['admin', 'manager']}>
+                <UserManagement />
+              </RoleProtectedRoute>
+            } 
+          />
+          <Route 
             path="/dashboard" 
             element={
               <RoleProtectedRoute allowedRoles={['admin', 'manager']}>

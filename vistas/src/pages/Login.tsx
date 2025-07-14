@@ -32,7 +32,7 @@ const Login: React.FC = () => {
         if (userRoles.includes('admin') || userRoles.includes('manager')) {
           navigate('/dashboard');
         } else {
-          navigate('/user-profile');
+          navigate('/'); // Usuario normal va a la página de bienvenida
         }
       }, 100);
     } catch (err: unknown) {
@@ -86,7 +86,7 @@ const Login: React.FC = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
-                    placeholder="admin@mecanica.com"
+                    placeholder="usuario@ejemplo.com"
                     required
                   />
                 </div>
@@ -157,15 +157,6 @@ const Login: React.FC = () => {
                 )}
               </button>
             </form>
-
-            {/* Demo Credentials */}
-            <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-              <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Credenciales de Demo:</h3>
-              <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
-                <p><strong>Admin:</strong> admin@mecanica.com / admin123</p>
-                <p><strong>Manager:</strong> manager@mecanica.com / manager123</p>
-              </div>
-            </div>
 
             {/* Sign Up Link */}
             <div className="mt-6 text-center">

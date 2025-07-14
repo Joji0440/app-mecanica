@@ -16,6 +16,9 @@ class AppServiceProvider extends ServiceProvider
             \App\Repositories\Interfaces\UserRepositoryInterface::class,
             \App\Repositories\UserRepository::class
         );
+
+        // Register UserService
+        $this->app->singleton(\App\Services\UserService::class);
     }
 
     /**

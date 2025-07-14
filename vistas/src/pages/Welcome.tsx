@@ -70,21 +70,31 @@ const WelcomePage: React.FC = () => {
             
             <div className="flex items-center space-x-4">
               {user ? (
-                hasAdminAccess ? (
-                  <Link
-                    to="/dashboard"
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
-                  >
-                    Ir al Dashboard
-                  </Link>
-                ) : (
-                  <Link
-                    to="/user-profile"
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
-                  >
-                    Mi Perfil
-                  </Link>
-                )
+                <>
+                  <div className="hidden md:flex items-center space-x-2 text-sm">
+                    <span className="text-gray-600 dark:text-gray-400">
+                      Conectado como: <strong className="text-gray-900 dark:text-white">{user.name}</strong>
+                    </span>
+                    <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-xs">
+                      {user?.roles?.[0]?.name || 'Usuario'}
+                    </span>
+                  </div>
+                  {hasAdminAccess ? (
+                    <Link
+                      to="/dashboard"
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+                    >
+                      Acceder a Mi Perfil
+                    </Link>
+                  ) : (
+                    <Link
+                      to="/profile"
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+                    >
+                      Mi Perfil
+                    </Link>
+                  )}
+                </>
               ) : (
                 <>
                   <Link

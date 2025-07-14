@@ -8,8 +8,7 @@ import {
   Shield,
   UserCheck,
   Activity,
-  TrendingUp,
-  LogOut
+  TrendingUp
 } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
@@ -62,30 +61,20 @@ const Dashboard: React.FC = () => {
       {/* User Info Bar */}
       <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <div className="h-10 w-10 rounded-full bg-indigo-600 flex items-center justify-center">
-                <span className="text-sm font-medium text-white">
-                  {user?.name?.charAt(0).toUpperCase() || 'U'}
-                </span>
+          <div className="flex items-center">
+            <div className="h-10 w-10 rounded-full bg-indigo-600 flex items-center justify-center">
+              <span className="text-sm font-medium text-white">
+                {user?.name?.charAt(0).toUpperCase() || 'U'}
+              </span>
+            </div>
+            <div className="ml-3">
+              <div className="text-sm font-medium text-gray-900 dark:text-white">
+                {user?.name}
               </div>
-              <div className="ml-3">
-                <div className="text-sm font-medium text-gray-900 dark:text-white">
-                  {user?.name}
-                </div>
-                <div className="text-sm text-gray-500 dark:text-gray-400">
-                  {user?.email} • {user?.roles?.[0]?.name || 'Usuario'}
-                </div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">
+                {user?.email} • {user?.roles?.[0]?.name || 'Usuario'}
               </div>
             </div>
-            
-            <button
-              onClick={handleLogout}
-              className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              Cerrar Sesión
-            </button>
           </div>
         </div>
       </div>

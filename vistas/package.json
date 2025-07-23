@@ -11,7 +11,8 @@
     "type-check": "tsc --noEmit",
     "preview": "vite preview",
     "test": "echo \"No tests specified yet\" && exit 0",
-    "serve": "python3 server.py",
+    "serve": "node server.js",
+    "serve:python": "python server.py",
     "serve:node": "node server.js"
   },
   "dependencies": {

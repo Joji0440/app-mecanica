@@ -13,43 +13,47 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Llamar al seeder de roles y permisos
-        $this->call(RolesAndPermissionsSeeder::class);
+        $this->command->info('🌱 Iniciando seeding de la base de datos...');
 
-        // Crear usuario administrador
+        // 1. Actualizar roles del sistema
+        $this->call(UpdateSystemRolesSeeder::class);
+        
+        // 2. Verificar si estamos en entorno de desarrollo
+        if (app()->environment(['local', 'development'])) {
+            $this->command->info('🛠️ Entorno de desarrollo detectado - Creando datos de prueba...');
+            $this->call(DevelopmentDataSeeder::class);
+        } else {
+            // Solo crear datos mínimos en producción
+            $this->createProductionData();
+        }
+
+        $this->command->info('✅ Seeding completado!');
+    }
+
+    /**
+     * Crear datos mínimos para producción
+     */
+    private function createProductionData(): void
+    {
+        $this->command->info('🏭 Entorno de producción - Creando solo datos esenciales...');
+        
+        // Solo crear admin principal si no existe
         $admin = User::firstOrCreate(
             ['email' => 'admin@mecanica.com'],
             [
-                'name' => 'Administrador',
+                'name' => 'Administrador Principal',
                 'password' => \Hash::make('admin123'),
+                'phone' => '+1234567890',
+                'city' => 'Ciudad Principal',
+                'is_active' => true,
                 'email_verified_at' => now()
             ]
         );
-        if (!$admin->hasRole('admin')) {
-            $admin->assignRole('admin');
+        
+        if (!$admin->hasRole('administrador')) {
+            $admin->assignRole('administrador');
         }
 
-        // Crear usuario de prueba
-        $testUser = User::firstOrCreate(
-            ['email' => 'user@mecanica.com'],
-            [
-                'name' => 'Usuario Prueba',
-                'password' => \Hash::make('user123'),
-                'email_verified_at' => now()
-            ]
-        );
-        if (!$testUser->hasRole('user')) {
-            $testUser->assignRole('user');
-        }
-
-        // Usuario de ejemplo del factory
-        User::firstOrCreate(
-            ['email' => 'test@example.com'],
-            [
-                'name' => 'Test User',
-                'password' => \Hash::make('password'),
-                'email_verified_at' => now()
-            ]
-        );
+        $this->command->info('👑 Administrador principal creado/verificado');
     }
 }

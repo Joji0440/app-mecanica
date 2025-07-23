@@ -13,11 +13,18 @@ class CheckRole
      */
     public function handle(Request $request, Closure $next, ...$roles)
     {
-        $user = Auth::user();
+        // Asegurar que se use el guard correcto para API
+        $user = Auth::guard('sanctum')->user() ?? Auth::user();
 
-        if (!$user || !$user->hasAnyRole($roles)) {
+        if (!$user) {
             return response()->json([
-                'message' => 'No tienes permiso para acceder a este recurso.'
+                'message' => 'No autenticado.'
+            ], 401);
+        }
+
+        if (!$user->hasAnyRole($roles)) {
+            return response()->json([
+                'message' => 'No tienes permiso para acceder a este recurso. Roles requeridos: ' . implode(', ', $roles)
             ], 403);
         }
 

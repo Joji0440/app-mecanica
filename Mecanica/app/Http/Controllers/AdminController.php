@@ -204,15 +204,82 @@ class AdminController extends Controller
      */
     public function getStats()
     {
+        // Estadísticas básicas de usuarios
+        $totalUsers = User::count();
+        $adminUsers = User::role('administrador')->count();
+        $mechanicUsers = User::role('mecanico')->count();
+        $clientUsers = User::role('cliente')->count();
+        
+        // Usuarios activos (pueden modificar esta lógica según sus necesidades)
+        $activeUsers = User::where('is_active', true)->count();
+        
+        // Usuarios del mes actual
+        $usersThisMonth = User::whereMonth('created_at', now()->month)
+                            ->whereYear('created_at', now()->year)
+                            ->count();
+        
+        // Usuarios de la semana actual
+        $usersThisWeek = User::whereBetween('created_at', [
+            now()->startOfWeek(),
+            now()->endOfWeek()
+        ])->count();
+
+        // Usuarios registrados hoy
+        $usersToday = User::whereDate('created_at', today())->count();
+
+        // Usuarios recientes (últimos 5)
+        $recentUsers = User::latest()
+                          ->take(5)
+                          ->with('roles')
+                          ->get(['id', 'name', 'email', 'created_at']);
+
+        // Distribución de roles en porcentajes
+        $roleDistribution = [
+            'administradores' => $totalUsers > 0 ? round(($adminUsers / $totalUsers) * 100, 1) : 0,
+            'mecanicos' => $totalUsers > 0 ? round(($mechanicUsers / $totalUsers) * 100, 1) : 0,
+            'clientes' => $totalUsers > 0 ? round(($clientUsers / $totalUsers) * 100, 1) : 0,
+        ];
+
+        // Estadísticas de crecimiento (comparación con mes anterior)
+        $lastMonth = now()->subMonth();
+        $usersLastMonth = User::whereMonth('created_at', $lastMonth->month)
+                            ->whereYear('created_at', $lastMonth->year)
+                            ->count();
+        
+        $growthPercentage = $usersLastMonth > 0 
+            ? round((($usersThisMonth - $usersLastMonth) / $usersLastMonth) * 100, 1)
+            : 0;
+
         $stats = [
-            'total_users' => User::count(),
-            'admin_users' => User::role('admin')->count(),
-            'moderator_users' => User::role('moderator')->count(),
-            'regular_users' => User::role('user')->count(),
-            'users_this_month' => User::whereMonth('created_at', now()->month)
-                                    ->whereYear('created_at', now()->year)
-                                    ->count(),
-            'recent_users' => User::latest()->take(5)->get(['id', 'name', 'email', 'created_at'])
+            // Contadores principales
+            'total_users' => $totalUsers,
+            'admin_users' => $adminUsers,
+            'mechanic_users' => $mechanicUsers,
+            'client_users' => $clientUsers,
+            'active_users' => $activeUsers,
+            
+            // Estadísticas temporales
+            'users_today' => $usersToday,
+            'users_this_week' => $usersThisWeek,
+            'users_this_month' => $usersThisMonth,
+            'users_last_month' => $usersLastMonth,
+            
+            // Análisis de crecimiento
+            'growth_percentage' => $growthPercentage,
+            'is_growing' => $growthPercentage > 0,
+            
+            // Distribución de roles
+            'role_distribution' => $roleDistribution,
+            
+            // Datos adicionales
+            'recent_users' => $recentUsers,
+            
+            // Estadísticas del sistema (futuro)
+            'total_vehicles' => 0, // Placeholder para cuando implementes vehículos
+            'total_services' => 0, // Placeholder para cuando implementes servicios
+            'active_services' => 0, // Placeholder para servicios activos
+            'completed_services' => 0, // Placeholder para servicios completados
+            'monthly_revenue' => 0, // Placeholder para ingresos mensuales
         ];
 
         return response()->json([

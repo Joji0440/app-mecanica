@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { Eye, EyeOff, Mail, Lock, User, Loader } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, Loader, UserCheck, Wrench, Shield } from 'lucide-react';
 import NavigationHeader from '../components/NavigationHeader';
 
 const Register: React.FC = () => {
@@ -9,7 +9,8 @@ const Register: React.FC = () => {
     name: '',
     email: '',
     password: '',
-    password_confirmation: ''
+    password_confirmation: '',
+    role: 'cliente' as 'cliente' | 'mecanico' | 'administrador'
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -19,7 +20,7 @@ const Register: React.FC = () => {
   const { register } = useAuth();
   const navigate = useNavigate();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
@@ -42,8 +43,6 @@ const Register: React.FC = () => {
       await register(formData);
       
       // Redirigir basado en el rol del usuario después del registro
-      // Los usuarios registrados normalmente no tienen roles admin/manager por defecto
-      // Por lo tanto, van directo al perfil de usuario
       setTimeout(() => {
         const userData = JSON.parse(localStorage.getItem('user') || '{}');
         const userRoles = userData?.roles?.map((role: { name: string }) => role.name.toLowerCase()) || [];
@@ -198,6 +197,101 @@ const Register: React.FC = () => {
                       <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
                     )}
                   </button>
+                </div>
+              </div>
+
+              {/* Role Selection */}
+              <div>
+                <label htmlFor="role" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Tipo de Usuario
+                </label>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {/* Cliente Option */}
+                  <label className={`relative flex flex-col items-center p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                    formData.role === 'cliente' 
+                      ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' 
+                      : 'border-gray-300 dark:border-gray-600 hover:border-indigo-300 dark:hover:border-indigo-400'
+                  }`}>
+                    <input
+                      type="radio"
+                      name="role"
+                      value="cliente"
+                      checked={formData.role === 'cliente'}
+                      onChange={handleChange}
+                      className="sr-only"
+                    />
+                    <UserCheck className={`h-8 w-8 mb-2 ${
+                      formData.role === 'cliente' ? 'text-indigo-600' : 'text-gray-400'
+                    }`} />
+                    <span className={`font-medium ${
+                      formData.role === 'cliente' 
+                        ? 'text-indigo-900 dark:text-indigo-100' 
+                        : 'text-gray-700 dark:text-gray-300'
+                    }`}>
+                      Cliente
+                    </span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400 text-center mt-1">
+                      Solicitar servicios mecánicos
+                    </span>
+                  </label>
+
+                  {/* Mecánico Option */}
+                  <label className={`relative flex flex-col items-center p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                    formData.role === 'mecanico' 
+                      ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' 
+                      : 'border-gray-300 dark:border-gray-600 hover:border-indigo-300 dark:hover:border-indigo-400'
+                  }`}>
+                    <input
+                      type="radio"
+                      name="role"
+                      value="mecanico"
+                      checked={formData.role === 'mecanico'}
+                      onChange={handleChange}
+                      className="sr-only"
+                    />
+                    <Wrench className={`h-8 w-8 mb-2 ${
+                      formData.role === 'mecanico' ? 'text-indigo-600' : 'text-gray-400'
+                    }`} />
+                    <span className={`font-medium ${
+                      formData.role === 'mecanico' 
+                        ? 'text-indigo-900 dark:text-indigo-100' 
+                        : 'text-gray-700 dark:text-gray-300'
+                    }`}>
+                      Mecánico
+                    </span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400 text-center mt-1">
+                      Ofrecer servicios mecánicos
+                    </span>
+                  </label>
+
+                  {/* Administrador Option */}
+                  <label className={`relative flex flex-col items-center p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                    formData.role === 'administrador' 
+                      ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' 
+                      : 'border-gray-300 dark:border-gray-600 hover:border-indigo-300 dark:hover:border-indigo-400'
+                  }`}>
+                    <input
+                      type="radio"
+                      name="role"
+                      value="administrador"
+                      checked={formData.role === 'administrador'}
+                      onChange={handleChange}
+                      className="sr-only"
+                    />
+                    <Shield className={`h-8 w-8 mb-2 ${
+                      formData.role === 'administrador' ? 'text-indigo-600' : 'text-gray-400'
+                    }`} />
+                    <span className={`font-medium ${
+                      formData.role === 'administrador' 
+                        ? 'text-indigo-900 dark:text-indigo-100' 
+                        : 'text-gray-700 dark:text-gray-300'
+                    }`}>
+                      Administrador
+                    </span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400 text-center mt-1">
+                      Gestionar la plataforma
+                    </span>
+                  </label>
                 </div>
               </div>
 

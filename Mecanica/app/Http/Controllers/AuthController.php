@@ -20,6 +20,7 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
+            'role' => 'nullable|string|in:cliente,mecanico,administrador',
         ]);
 
         if ($validator->fails()) {
@@ -35,8 +36,9 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        // Asignar rol de usuario por defecto
-        $user->assignRole('user');
+        // Asignar el rol especificado
+        $role = $request->input('role', 'cliente'); // Cliente por defecto
+        $user->assignRole($role);
 
         $token = $user->createToken('auth_token')->plainTextToken;
 

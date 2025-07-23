@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect } from 'react';
+import { createContext, useState, useEffect, useContext } from 'react';
 import type { ReactNode } from 'react';
 import { authAPI } from '../services/api';
 import type { User, AuthContextType, RegisterRequest } from '../types';
@@ -13,6 +13,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Funciones auxiliares para verificar roles
+  const hasRole = (role: string): boolean => {
+    return user?.roles?.some(r => r.name === role) ?? false;
+  };
+
+  const isClient = (): boolean => hasRole('cliente');
+  const isMechanic = (): boolean => hasRole('mecanico');
+  const isAdmin = (): boolean => hasRole('administrador');
 
   // Verificar si hay un token guardado al cargar la aplicación
   useEffect(() => {
@@ -93,6 +102,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
     register,
     logout,
     isAuthenticated: !!token && !!user,
+    hasRole,
+    isClient,
+    isMechanic,
+    isAdmin,
   };
 
   return (
@@ -100,4 +113,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
       {children}
     </AuthContext.Provider>
   );
+}
+
+// Hook personalizado para usar el contexto
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 }

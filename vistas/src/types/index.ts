@@ -1,7 +1,20 @@
+// ==========================================
+// TIPOS BASE DEL SISTEMA
+// ==========================================
+
 export interface User {
   id: number;
   name: string;
   email: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  postal_code?: string;
+  latitude?: string;
+  longitude?: string;
+  last_location_update?: string;
+  is_active: boolean;
   roles?: Role[];
   created_at?: string;
   updated_at?: string;
@@ -13,6 +26,10 @@ export interface Role {
   guard_name: string;
 }
 
+// ==========================================
+// AUTENTICACIÓN
+// ==========================================
+
 export interface LoginRequest {
   email: string;
   password: string;
@@ -23,6 +40,7 @@ export interface RegisterRequest {
   email: string;
   password: string;
   password_confirmation: string;
+  role?: 'cliente' | 'mecanico' | 'administrador';
 }
 
 export interface AuthResponse {
@@ -32,39 +50,238 @@ export interface AuthResponse {
   token_type: string;
 }
 
+// ==========================================
+// VEHÍCULOS
+// ==========================================
+
+export interface Vehicle {
+  id: number;
+  user_id: number;
+  make: string;
+  model: string;
+  year: number;
+  fuel_type: 'gasoline' | 'diesel' | 'hybrid' | 'electric' | 'other';
+  transmission_type: 'manual' | 'automatic' | 'cvt' | 'other';
+  engine_size?: string;
+  mileage: number;
+  license_plate: string;
+  color: string;
+  vin: string;
+  notes?: string;
+  service_history?: any[];
+  last_service_date?: string;
+  next_service_due?: string;
+  insurance_company?: string;
+  insurance_policy_number?: string;
+  emergency_contacts?: any[];
+  preferences?: any;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  user?: User;
+}
+
+export interface CreateVehicleRequest {
+  make: string;
+  model: string;
+  year: number;
+  fuel_type: 'gasoline' | 'diesel' | 'hybrid' | 'electric' | 'other';
+  transmission_type: 'manual' | 'automatic' | 'cvt' | 'other';
+  engine_type?: string;
+  mileage: number;
+  license_plate: string;
+  color: string;
+  vin: string;
+  notes?: string;
+}
+
+// ==========================================
+// PERFILES DE MECÁNICOS
+// ==========================================
+
+export interface MechanicProfile {
+  id: number;
+  user_id: number;
+  specializations: string[];
+  experience_years: number;
+  hourly_rate: string;
+  travel_radius: number;
+  availability_schedule?: any;
+  emergency_available: boolean;
+  is_verified: boolean;
+  is_available: boolean;
+  rating_average: string;
+  total_jobs: number;
+  total_reviews: number;
+  bio?: string;
+  certifications: string[];
+  tools_owned?: string[];
+  minimum_service_fee?: string;
+  accepts_weekend_jobs: boolean;
+  accepts_night_jobs: boolean;
+  created_at: string;
+  updated_at: string;
+  user?: User;
+  distance_km?: number;
+  estimated_arrival_minutes?: number;
+}
+
+export interface CreateMechanicProfileRequest {
+  specializations: string[];
+  experience_years: number;
+  hourly_rate: number;
+  travel_radius: number;
+  emergency_available: boolean;
+  bio?: string;
+  certifications: string[];
+  accepts_weekend_jobs: boolean;
+  accepts_night_jobs: boolean;
+}
+
+// ==========================================
+// SERVICIOS Y SOLICITUDES
+// ==========================================
+
+export interface ServiceRequest {
+  id: string;
+  client_id: number;
+  vehicle_id: number;
+  mechanic_id?: number;
+  service_type: 'emergency' | 'scheduled' | 'diagnostic' | 'maintenance' | 'repair';
+  problem_description: string;
+  location_description: string;
+  client_location: {
+    latitude: string;
+    longitude: string;
+    address: string;
+    city?: string;
+  };
+  preferred_date?: string;
+  preferred_time?: string;
+  max_budget?: number;
+  priority: 'low' | 'normal' | 'high' | 'emergency';
+  images: string[];
+  status: 'pending' | 'accepted' | 'in_progress' | 'completed' | 'cancelled';
+  created_at: string;
+  updated_at: string;
+  vehicle?: Vehicle;
+  mechanic?: User;
+  client?: User;
+}
+
+// Tipo extendido para el sistema de dashboard con campos adicionales
+export interface ExtendedServiceRequest {
+  id: number;
+  title: string;
+  description: string;
+  service_type: string;
+  urgency_level: 'baja' | 'media' | 'alta' | 'critica';
+  estimated_duration_hours: number;
+  budget_max: number;
+  is_emergency: boolean;
+  preferred_date?: string;
+  location_address?: string;
+  location_notes?: string;
+  vehicle_id?: number;
+  preferred_mechanic_id?: number;
+  status: 'pending' | 'accepted' | 'in_progress' | 'completed' | 'cancelled' | 'rejected';
+  final_cost?: number;
+  created_at: string;
+  updated_at: string;
+  client?: User;
+  mechanic?: MechanicProfile;
+  vehicle?: Vehicle;
+}
+
+export interface ServiceRequestCreate {
+  title: string;
+  description: string;
+  service_type: string;
+  urgency_level: string;
+  estimated_duration_hours: number;
+  budget_max: number;
+  is_emergency: boolean;
+  preferred_date?: string;
+  location_address?: string;
+  location_notes?: string;
+  vehicle_id?: number | null;
+  preferred_mechanic_id?: number | null;
+}
+
+export interface CreateServiceRequestRequest {
+  vehicle_id: number;
+  service_type: 'emergency' | 'scheduled' | 'diagnostic' | 'maintenance' | 'repair';
+  problem_description: string;
+  location_description: string;
+  preferred_date?: string;
+  preferred_time?: string;
+  max_budget?: number;
+  priority: 'low' | 'normal' | 'high' | 'emergency';
+  images?: string[];
+}
+
+export interface AvailableServiceRequest {
+  id: string;
+  client_name: string;
+  vehicle: string;
+  service_type: string;
+  problem_description: string;
+  location: {
+    latitude: number;
+    longitude: number;
+    address: string;
+    description: string;
+  };
+  distance_km: number;
+  priority: string;
+  max_budget: number;
+  preferred_time: string;
+  created_at: string;
+}
+
+// ==========================================
+// GEOLOCALIZACIÓN
+// ==========================================
+
+export interface LocationUpdate {
+  latitude: number;
+  longitude: number;
+  address?: string;
+  city?: string;
+  state?: string;
+  postal_code?: string;
+}
+
+export interface NearbyMechanicSearchParams {
+  latitude: number;
+  longitude: number;
+  radius: number;
+  specialty?: string;
+  min_rating?: number;
+  emergency_only?: boolean;
+}
+
+// ==========================================
+// RESPUESTAS DE API
+// ==========================================
+
 export interface ApiResponse<T = any> {
   message: string;
   data?: T;
+  error?: string;
 }
 
-export interface DashboardData {
-  stats: {
-    total_users: number;
-    admin_users: number;
-    manager_users: number;
-    regular_users: number;
-    users_this_month: number;
-    users_today: number;
-  };
-  recent_users: User[];
-  user_growth: {
-    labels: string[];
-    data: number[];
-  };
-  role_distribution: {
-    admin: number;
-    manager: number;
-    user: number;
-  };
-  system_info: {
-    php_version: string;
-    laravel_version: string;
-    database_connection: string;
-    environment: string;
-    debug_mode: boolean;
-    timezone: string;
-  };
+export interface PaginatedResponse<T> {
+  data: T[];
+  current_page: number;
+  last_page: number;
+  per_page: number;
+  total: number;
 }
+
+// ==========================================
+// CONTEXTO DE AUTENTICACIÓN
+// ==========================================
 
 export interface AuthContextType {
   user: User | null;
@@ -74,15 +291,65 @@ export interface AuthContextType {
   register: (data: RegisterRequest) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
+  hasRole: (role: string) => boolean;
+  isClient: () => boolean;
+  isMechanic: () => boolean;
+  isAdmin: () => boolean;
 }
 
-export interface UserStats {
+// ==========================================
+// ESTADÍSTICAS Y DASHBOARD
+// ==========================================
+
+export interface DashboardStats {
+  // Contadores principales
   total_users: number;
   admin_users: number;
-  manager_users: number;
-  regular_users: number;
-  users_this_month: number;
+  mechanic_users: number;
+  client_users: number;
+  active_users: number;
+  
+  // Estadísticas temporales
   users_today: number;
   users_this_week: number;
-  active_users: number;
+  users_this_month: number;
+  users_last_month: number;
+  
+  // Análisis de crecimiento
+  growth_percentage: number;
+  is_growing: boolean;
+  
+  // Distribución de roles
+  role_distribution: {
+    administradores: number;
+    mecanicos: number;
+    clientes: number;
+  };
+  
+  // Datos adicionales
+  recent_users: User[];
+  
+  // Estadísticas del sistema (futuro)
+  total_vehicles: number;
+  total_services: number;
+  active_services: number;
+  completed_services: number;
+  monthly_revenue: number;
+}
+
+export interface MechanicStats {
+  total_jobs: number;
+  jobs_this_month: number;
+  average_rating: number;
+  total_earnings: number;
+  active_requests: number;
+  completion_rate: number;
+}
+
+export interface ClientStats {
+  total_vehicles: number;
+  total_services: number;
+  services_this_month: number;
+  total_spent: number;
+  favorite_mechanics: number;
 }

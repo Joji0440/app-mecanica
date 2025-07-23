@@ -50,6 +50,38 @@ export interface AuthResponse {
   token_type: string;
 }
 
+// Tipos auxiliares para Vehicle
+export interface ServiceRecord {
+  id: number;
+  date: string;
+  description: string;
+  cost?: number;
+  mechanic?: string;
+}
+
+export interface EmergencyContact {
+  name: string;
+  phone: string;
+  relationship: string;
+}
+
+export interface VehiclePreferences {
+  preferred_mechanic?: number;
+  service_reminders: boolean;
+  emergency_notifications: boolean;
+}
+
+// Tipo auxiliar para MechanicProfile
+export interface AvailabilitySchedule {
+  monday?: { start: string; end: string; available: boolean };
+  tuesday?: { start: string; end: string; available: boolean };
+  wednesday?: { start: string; end: string; available: boolean };
+  thursday?: { start: string; end: string; available: boolean };
+  friday?: { start: string; end: string; available: boolean };
+  saturday?: { start: string; end: string; available: boolean };
+  sunday?: { start: string; end: string; available: boolean };
+}
+
 // ==========================================
 // VEHÍCULOS
 // ==========================================
@@ -68,13 +100,13 @@ export interface Vehicle {
   color: string;
   vin: string;
   notes?: string;
-  service_history?: any[];
+  service_history?: ServiceRecord[];
   last_service_date?: string;
   next_service_due?: string;
   insurance_company?: string;
   insurance_policy_number?: string;
-  emergency_contacts?: any[];
-  preferences?: any;
+  emergency_contacts?: EmergencyContact[];
+  preferences?: VehiclePreferences;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -106,7 +138,7 @@ export interface MechanicProfile {
   experience_years: number;
   hourly_rate: string;
   travel_radius: number;
-  availability_schedule?: any;
+  availability_schedule?: AvailabilitySchedule;
   emergency_available: boolean;
   is_verified: boolean;
   is_available: boolean;
@@ -265,7 +297,7 @@ export interface NearbyMechanicSearchParams {
 // RESPUESTAS DE API
 // ==========================================
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   message: string;
   data?: T;
   error?: string;

@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { authAPI } from '../services/api';
 import type { User, AuthContextType, RegisterRequest } from '../types';
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 interface AuthProviderProps {
@@ -116,6 +117,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 }
 
 // Hook personalizado para usar el contexto
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {

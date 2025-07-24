@@ -71,6 +71,13 @@ class ServiceRequestController extends Controller
                 ], 403);
             }
 
+            // Verificar que el usuario esté activo
+            if (!$user->is_active) {
+                return response()->json([
+                    'message' => 'Tu cuenta está desactivada. No puedes crear solicitudes de servicio'
+                ], 403);
+            }
+
             $validated = $request->validate([
                 'title' => 'required|string|max:255',
                 'description' => 'required|string',
@@ -304,6 +311,15 @@ class ServiceRequestController extends Controller
     public function getAvailableRequests(Request $request)
     {
         try {
+            $user = $request->user();
+
+            // Verificar que el usuario (mecánico) esté activo
+            if (!$user->is_active) {
+                return response()->json([
+                    'message' => 'Tu cuenta está desactivada. No puedes ver solicitudes disponibles'
+                ], 403);
+            }
+
             // Obtener solicitudes pendientes sin mecánico asignado
             $availableRequests = ServiceRequest::where('status', 'pending')
                 ->whereNull('mechanic_id')
@@ -331,6 +347,13 @@ class ServiceRequestController extends Controller
     {
         try {
             $user = $request->user();
+
+            // Verificar que el usuario (mecánico) esté activo
+            if (!$user->is_active) {
+                return response()->json([
+                    'message' => 'Tu cuenta está desactivada. No puedes aceptar solicitudes de servicio'
+                ], 403);
+            }
 
             // Verificar que la solicitud esté disponible
             if ($serviceRequest->status !== 'pending' || $serviceRequest->mechanic_id) {

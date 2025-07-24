@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Eye, EyeOff, Mail, Lock, User, Loader, UserCheck, Wrench, Shield } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, Loader, UserCheck, Wrench } from 'lucide-react';
 import NavigationHeader from '../../components/NavigationHeader';
 
 const Register: React.FC = () => {
@@ -10,7 +10,7 @@ const Register: React.FC = () => {
     email: '',
     password: '',
     password_confirmation: '',
-    role: 'cliente' as 'cliente' | 'mecanico' | 'administrador'
+    role: 'cliente' as 'cliente' | 'mecanico'
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -205,7 +205,7 @@ const Register: React.FC = () => {
                 <label htmlFor="role" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Tipo de Usuario
                 </label>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {/* Cliente Option */}
                   <label className={`relative flex flex-col items-center p-4 border-2 rounded-lg cursor-pointer transition-all ${
                     formData.role === 'cliente' 
@@ -263,35 +263,13 @@ const Register: React.FC = () => {
                       Ofrecer servicios mecánicos
                     </span>
                   </label>
-
-                  {/* Administrador Option */}
-                  <label className={`relative flex flex-col items-center p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                    formData.role === 'administrador' 
-                      ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' 
-                      : 'border-gray-300 dark:border-gray-600 hover:border-indigo-300 dark:hover:border-indigo-400'
-                  }`}>
-                    <input
-                      type="radio"
-                      name="role"
-                      value="administrador"
-                      checked={formData.role === 'administrador'}
-                      onChange={handleChange}
-                      className="sr-only"
-                    />
-                    <Shield className={`h-8 w-8 mb-2 ${
-                      formData.role === 'administrador' ? 'text-indigo-600' : 'text-gray-400'
-                    }`} />
-                    <span className={`font-medium ${
-                      formData.role === 'administrador' 
-                        ? 'text-indigo-900 dark:text-indigo-100' 
-                        : 'text-gray-700 dark:text-gray-300'
-                    }`}>
-                      Administrador
-                    </span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400 text-center mt-1">
-                      Gestionar la plataforma
-                    </span>
-                  </label>
+                </div>
+                
+                {/* Info sobre administradores */}
+                <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg">
+                  <p className="text-xs text-blue-700 dark:text-blue-300">
+                    <strong>Nota:</strong> Los administradores solo pueden ser creados por otros administradores desde el panel de administración.
+                  </p>
                 </div>
               </div>
 

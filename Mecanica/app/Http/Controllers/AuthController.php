@@ -20,7 +20,7 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
-            'role' => 'nullable|string|in:cliente,mecanico,administrador',
+            'role' => 'nullable|string|in:cliente,mecanico',
         ]);
 
         if ($validator->fails()) {
@@ -30,6 +30,14 @@ class AuthController extends Controller
             ], 422);
         }
 
+        // No permitir registro como administrador desde el registro público
+        $role = $request->input('role', 'cliente'); // Cliente por defecto
+        if ($role === 'administrador') {
+            return response()->json([
+                'message' => 'No puedes registrarte como administrador desde aquí'
+            ], 403);
+        }
+
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
@@ -37,7 +45,6 @@ class AuthController extends Controller
         ]);
 
         // Asignar el rol especificado
-        $role = $request->input('role', 'cliente'); // Cliente por defecto
         $user->assignRole($role);
 
         $token = $user->createToken('auth_token')->plainTextToken;

@@ -47,6 +47,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/users/{user}', [UserController::class, 'destroy']);
         Route::post('/users/{user}/assign-role', [UserController::class, 'assignRole']);
         Route::post('/users/{user}/remove-role', [UserController::class, 'removeRole']);
+        Route::patch('/admin/users/{user}/toggle-status', [AdminController::class, 'toggleUserStatus']);
     });
 
     // ==========================================
@@ -90,13 +91,13 @@ Route::middleware('auth:sanctum')->group(function () {
     // SERVICIOS Y SOLICITUDES
     // ==========================================
     // Para clientes
-    Route::middleware(['role:cliente'])->group(function () {
+    Route::middleware(['role:cliente', 'check.active'])->group(function () {
         Route::post('/services/request', [ServiceController::class, 'createServiceRequest']);
         Route::get('/services/find-mechanics', [ServiceController::class, 'findMechanicsBySpecialty']);
     });
     
     // Para mecánicos
-    Route::middleware(['role:mecanico'])->group(function () {
+    Route::middleware(['role:mecanico', 'check.active'])->group(function () {
         Route::get('/services/available-requests', [ServiceController::class, 'getAvailableRequests']);
         Route::post('/services/respond', [ServiceController::class, 'respondToRequest']);
         // Rutas específicas para service-requests de mecánicos
@@ -111,8 +112,10 @@ Route::middleware('auth:sanctum')->group(function () {
     // ==========================================
     // SOLICITUDES DE SERVICIO (SERVICE REQUESTS)
     // ==========================================
-    Route::apiResource('service-requests', ServiceRequestController::class);
-    Route::patch('/service-requests/{serviceRequest}/status', [ServiceRequestController::class, 'updateStatus']);
+    Route::middleware(['check.active'])->group(function () {
+        Route::apiResource('service-requests', ServiceRequestController::class);
+        Route::patch('/service-requests/{serviceRequest}/status', [ServiceRequestController::class, 'updateStatus']);
+    });
 
     // ==========================================
     // GEOLOCALIZACIÓN

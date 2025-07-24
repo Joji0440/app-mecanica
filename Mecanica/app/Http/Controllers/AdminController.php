@@ -369,4 +369,64 @@ class AdminController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Activar/desactivar usuario (solo manager o administrador)
+     */
+    public function toggleUserStatus(Request $request, User $user)
+    {
+        try {
+            $currentUser = $request->user();
+            
+            // Verificar que el usuario actual sea manager o administrador
+            if (!$currentUser->hasRole('manager') && !$currentUser->hasRole('administrador')) {
+                return response()->json([
+                    'message' => 'No tienes permisos para cambiar el estado de usuarios'
+                ], 403);
+            }
+
+            // Validar datos de entrada
+            $validator = Validator::make($request->all(), [
+                'is_active' => 'required|boolean'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'message' => 'Datos inválidos',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            // No permitir desactivar al propio usuario
+            if ($user->id === $currentUser->id) {
+                return response()->json([
+                    'message' => 'No puedes cambiar tu propio estado'
+                ], 400);
+            }
+
+            // Verificar si la tabla users tiene la columna is_active
+            if (!$user->getConnection()->getSchemaBuilder()->hasColumn('users', 'is_active')) {
+                return response()->json([
+                    'message' => 'La funcionalidad de activación/desactivación no está disponible'
+                ], 501);
+            }
+
+            // Actualizar estado del usuario
+            $user->is_active = $request->is_active;
+            $user->save();
+
+            $status = $request->is_active ? 'activado' : 'desactivado';
+
+            return response()->json([
+                'message' => "Usuario {$status} exitosamente",
+                'data' => $user->fresh()->load('roles')
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al cambiar el estado del usuario',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

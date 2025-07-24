@@ -26,6 +26,13 @@ class ServiceController extends Controller
                 ], 403);
             }
 
+            // Verificar que el usuario esté activo
+            if (!$user->is_active) {
+                return response()->json([
+                    'message' => 'Tu cuenta está desactivada. No puedes crear solicitudes de servicio'
+                ], 403);
+            }
+
             $validatedData = $request->validate([
                 'vehicle_id' => 'required|integer|exists:vehicles,id',
                 'mechanic_id' => 'nullable|integer|exists:users,id',
@@ -121,6 +128,13 @@ class ServiceController extends Controller
                 ], 403);
             }
 
+            // Verificar que el usuario esté activo
+            if (!$user->is_active) {
+                return response()->json([
+                    'message' => 'Tu cuenta está desactivada. No puedes ver solicitudes disponibles'
+                ], 403);
+            }
+
             $mechanicProfile = $user->mechanicProfile;
             if (!$mechanicProfile || !$mechanicProfile->is_available) {
                 return response()->json([
@@ -173,6 +187,13 @@ class ServiceController extends Controller
             if (!$user->hasRole('mecanico')) {
                 return response()->json([
                     'message' => 'Solo los mecánicos pueden responder a solicitudes'
+                ], 403);
+            }
+
+            // Verificar que el usuario esté activo
+            if (!$user->is_active) {
+                return response()->json([
+                    'message' => 'Tu cuenta está desactivada. No puedes responder a solicitudes de servicio'
                 ], 403);
             }
 

@@ -24,30 +24,38 @@ return [
         'http://127.0.0.1:3000',
         'http://localhost:3000',
         'http://192.168.0.105:3000',
+        'http://192.168.0.100:3000',
         
         // Puerto 8001 para conexiones locales
         'http://127.0.0.1:8001',
         'http://localhost:8001',
         'http://192.168.0.105:8001',
+        'http://192.168.0.100:8001',
         
         // Otros puertos comunes para frontend
         'http://127.0.0.1:5173',
         'http://localhost:5173',
         'http://192.168.0.105:5173',
+        'http://192.168.0.100:5173',
         'http://127.0.0.1:4173',
         'http://localhost:4173',
         'http://192.168.0.105:4173',
+        'http://192.168.0.100:4173',
         
         // Sin puerto específico
         'http://127.0.0.1',
         'http://localhost',
         'http://192.168.0.105',
+        'http://192.168.0.100',
         
         // Para debugging, permitir HTTPS también (temporal)
         'https://192.168.0.105:3000',
         'https://192.168.0.105',
         'https://localhost:3000',
         'https://127.0.0.1:3000',
+        
+        // Permitir temporalmente todos los orígenes para debugging
+        '*',
     ],
 
     'allowed_origins_patterns' => [

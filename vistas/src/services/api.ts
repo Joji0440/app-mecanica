@@ -21,7 +21,7 @@ import type {
   ClientStats
 } from '../types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8001/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://192.168.0.100:8000/api';
 
 // Crear instancia de axios
 const api = axios.create({
@@ -178,8 +178,8 @@ export const mechanicAPI = {
   },
 
   // Actualizar perfil de mecánico
-  updateProfile: async (id: number, profileData: Partial<CreateMechanicProfileRequest>): Promise<MechanicProfile> => {
-    const response = await api.put<ApiResponse<MechanicProfile>>(`/mechanics/${id}`, profileData);
+  updateProfile: async (profileData: Partial<CreateMechanicProfileRequest>): Promise<MechanicProfile> => {
+    const response = await api.put<ApiResponse<MechanicProfile>>('/mechanics/profile', profileData);
     return response.data.data!;
   },
 
@@ -344,6 +344,48 @@ export const serviceRequestAPI = {
   // Rechazar solicitud de servicio
   rejectRequest: async (id: number): Promise<ApiResponse<ExtendedServiceRequest>> => {
     const response = await api.post<ApiResponse<ExtendedServiceRequest>>(`/mechanics/service-requests/${id}/reject`);
+    return response.data;
+  },
+
+  // NUEVAS FUNCIONES PARA CÁLCULO DE DISTANCIAS
+
+  // Calcular distancia entre mecánico y servicio específico
+  calculateDistance: async (serviceId: number): Promise<ApiResponse<{
+    distance: { km: number; formatted: string };
+    travel_time: { hours: number; minutes: number; formatted: string };
+    radius_validation: {
+      status: 'optimal' | 'good' | 'limit' | 'exceeded';
+      within_radius: boolean;
+      percentage: number;
+      message: string;
+    };
+    travel_radius_km: number;
+    mechanic_location: { latitude: number; longitude: number };
+    service_location: { latitude: number; longitude: number };
+  }>> => {
+    const response = await api.get(`/service-requests/${serviceId}/distance`);
+    return response.data;
+  },
+
+  // Obtener todos los servicios disponibles con información de distancia
+  getServicesWithDistance: async (params?: {
+    search?: string;
+    within_radius_only?: boolean;
+  }): Promise<ApiResponse<Array<{
+    service: ExtendedServiceRequest;
+    distance_info: {
+      distance: { km: number; formatted: string };
+      travel_time: { hours: number; minutes: number; formatted: string };
+      radius_validation: {
+        status: 'optimal' | 'good' | 'limit' | 'exceeded';
+        within_radius: boolean;
+        percentage: number;
+        message: string;
+      };
+      travel_radius_km: number;
+    };
+  }>>> => {
+    const response = await api.get('/service-requests/with-distance', { params });
     return response.data;
   },
 };

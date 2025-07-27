@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { serviceRequestAPI, mechanicAPI } from '../../services/api';
 import type { ExtendedServiceRequest, MechanicProfile } from '../../types';
 import NavigationHeader from '../../components/NavigationHeader';
+import useLocation from '../../hooks/useLocation';
 import { 
   Calendar,
   Clock,
@@ -16,7 +17,11 @@ import {
   Eye,
   CheckSquare,
   X,
-  Loader
+  Loader,
+  Car,
+  MessageCircle,
+  Navigation,
+  Target
 } from 'lucide-react';
 
 interface DashboardStats {
@@ -26,6 +31,20 @@ interface DashboardStats {
   total_earnings: number;
   average_rating: number;
   total_reviews: number;
+}
+
+interface DistanceInfo {
+  distance: {
+    km: number;
+    formatted: string;
+  };
+  radius_validation: {
+    status: string;
+    within_radius: boolean;
+    percentage: number;
+    message: string;
+  };
+  travel_radius_km: number;
 }
 
 const MechanicDashboard: React.FC = () => {
@@ -47,6 +66,18 @@ const MechanicDashboard: React.FC = () => {
   const [error, setError] = useState('');
   const [selectedRequest, setSelectedRequest] = useState<ExtendedServiceRequest | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showVehicleDetails, setShowVehicleDetails] = useState(false);
+  
+  // Estados para cálculo de distancia
+  const [distanceInfo, setDistanceInfo] = useState<DistanceInfo | null>(null);
+  const [calculatingDistance, setCalculatingDistance] = useState(false);
+  const [distanceError, setDistanceError] = useState<string | null>(null);
+  const [serviceDistances, setServiceDistances] = useState<{[key: number]: number}>({});
+
+  // Hook de ubicación
+  const {
+    mechanicLocation,
+  } = useLocation();
 
   useEffect(() => {
     fetchDashboardData();
@@ -105,6 +136,11 @@ const MechanicDashboard: React.FC = () => {
       setPendingRequests(availableServices);
       setActiveServices(active);
       setRecentServices(recent);
+
+      // Calcular distancias de las solicitudes disponibles
+      if (availableServices.length > 0 && mechanicLocation) {
+        await calculateMultipleDistances(availableServices);
+      }
 
       // Calcular estadísticas
       const completed = mechanicServices.filter((s: ExtendedServiceRequest) => s.status === 'completed');
@@ -183,6 +219,67 @@ const MechanicDashboard: React.FC = () => {
       setIsLoading(false);
     }
   };
+
+  // Función para calcular distancias de múltiples servicios
+  const calculateMultipleDistances = async (services: ExtendedServiceRequest[]) => {
+    try {
+      const distances: {[key: number]: number} = {};
+      
+      for (const service of services) {
+        if (service.location_latitude && service.location_longitude) {
+          try {
+            const response = await serviceRequestAPI.calculateDistance(service.id);
+            if (response.data && response.data.distance) {
+              distances[service.id] = response.data.distance.km;
+            }
+          } catch (err) {
+            console.error(`Error calculando distancia para servicio ${service.id}:`, err);
+          }
+        }
+      }
+      
+      setServiceDistances(distances);
+    } catch (err) {
+      console.error('Error calculando distancias múltiples:', err);
+    }
+  };
+
+  // Función para calcular distancia
+  const calculateServiceDistance = async (serviceId: number) => {
+    try {
+      setCalculatingDistance(true);
+      setDistanceError(null);
+      
+      console.log('🧮 Calculando distancia para servicio:', serviceId);
+      
+      const response = await serviceRequestAPI.calculateDistance(serviceId);
+      
+      console.log('✅ Respuesta de cálculo de distancia:', response);
+      
+      if (response.data) {
+        setDistanceInfo(response.data);
+      } else {
+        setDistanceError('No se pudo obtener información de distancia');
+      }
+    } catch (err: any) {
+      console.error('❌ Error calculando distancia:', err);
+      setDistanceError(err.response?.data?.message || 'Error al calcular distancia');
+    } finally {
+      setCalculatingDistance(false);
+    }
+  };
+
+  // Calcular distancia cuando se selecciona un servicio
+  useEffect(() => {
+    if (selectedRequest && selectedRequest.id) {
+      console.log('🎯 Servicio seleccionado, calculando distancia...', selectedRequest.id);
+      calculateServiceDistance(selectedRequest.id);
+    } else {
+      // Limpiar información de distancia cuando no hay servicio seleccionado
+      setDistanceInfo(null);
+      setDistanceError(null);
+    }
+  }, [selectedRequest]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('es-ES', {
@@ -323,86 +420,155 @@ const MechanicDashboard: React.FC = () => {
             <h2 className="text-lg font-semibold flex items-center">
               <Clock className="h-5 w-5 mr-2 text-yellow-600" />
               Solicitudes Disponibles
+              {pendingRequests.length > 0 && (
+                <span className="ml-2 bg-yellow-100 text-yellow-800 text-xs font-medium px-2 py-1 rounded-full">
+                  {pendingRequests.length}
+                </span>
+              )}
             </h2>
+            {pendingRequests.length > 2 && (
+              <p className="text-xs text-gray-500 mt-1">
+                Mostrando 2 de {pendingRequests.length} solicitudes. Desplázate para ver más.
+              </p>
+            )}
           </div>
           
-          <div className="divide-y">
-            {pendingRequests.length > 0 ? (
-              pendingRequests.slice(0, 5).map((request) => (
-                <div key={request.id} className="p-4">
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-medium text-gray-900">{request.title}</h3>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${urgencyLevels.find(u => u.value === request.urgency_level)?.color}`}>
-                      {urgencyLevels.find(u => u.value === request.urgency_level)?.label}
-                    </span>
-                  </div>
-                  
-                  <p className="text-sm text-gray-600 mb-2 line-clamp-2">{request.description}</p>
-                  
-                  <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
-                    <span className="flex items-center">
-                      <User className="h-3 w-3 mr-1" />
-                      {request.client?.name}
-                    </span>
-                    <span className="flex items-center">
-                      <Clock className="h-3 w-3 mr-1" />
-                      {request.estimated_duration_hours}h
-                    </span>
-                    {request.budget_max > 0 && (
-                      <span className="flex items-center">
-                        <DollarSign className="h-3 w-3 mr-1" />
-                        ${request.budget_max}
+          {/* Contenedor con scroll limitado a 2 servicios */}
+          <div className="max-h-96 overflow-y-auto">
+            <div className="divide-y">
+              {pendingRequests.length > 0 ? (
+                pendingRequests.map((request) => (
+                  <div key={request.id} className="p-4">
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className="font-medium text-gray-900">{request.title}</h3>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${urgencyLevels.find(u => u.value === request.urgency_level)?.color}`}>
+                        {urgencyLevels.find(u => u.value === request.urgency_level)?.label}
                       </span>
+                    </div>
+                    
+                    <p className="text-sm text-gray-600 mb-2 line-clamp-2">{request.description}</p>
+                    
+                    {/* Información del Vehículo */}
+                    {request.vehicle && (
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-2 mb-3">
+                        <div className="flex items-center text-xs text-blue-800">
+                          <Car className="h-3 w-3 mr-1" />
+                          <span className="font-medium">
+                            {request.vehicle.make} {request.vehicle.model} {request.vehicle.year}
+                          </span>
+                          {request.vehicle.license_plate && (
+                            <span className="ml-2 font-mono bg-blue-100 px-1 rounded">
+                              {request.vehicle.license_plate}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center text-xs text-blue-600 mt-1 space-x-2">
+                          <span>⚙️ {request.vehicle.transmission_type}</span>
+                          <span>⛽ {request.vehicle.fuel_type}</span>
+                          {request.vehicle.mileage && (
+                            <span>📊 {request.vehicle.mileage.toLocaleString()} km</span>
+                          )}
+                        </div>
+                      </div>
                     )}
-                  </div>
 
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => {
-                        setSelectedRequest(request);
-                        setShowDetailModal(true);
-                      }}
-                      className="flex-1 bg-gray-100 text-gray-700 px-3 py-1 rounded text-xs hover:bg-gray-200 flex items-center justify-center gap-1"
-                    >
-                      <Eye className="h-3 w-3" />
-                      Ver
-                    </button>
-                    
-                    {request.status === 'pending' && (
-                      <>
-                        <button
-                          onClick={() => handleAcceptRequest(Number(request.id))}
-                          className="bg-green-600 text-white px-3 py-1 rounded text-xs hover:bg-green-700 flex items-center gap-1"
-                        >
-                          <CheckSquare className="h-3 w-3" />
-                          Aceptar
-                        </button>
-                        <button
-                          onClick={() => handleRejectRequest(Number(request.id))}
-                          className="bg-red-600 text-white px-3 py-1 rounded text-xs hover:bg-red-700"
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
-                      </>
+                    {/* Información de Distancia */}
+                    {mechanicLocation && request.location_address && (
+                      <div className="bg-green-50 border border-green-200 rounded-lg p-2 mb-3">
+                        <div className="flex items-center text-xs text-green-800">
+                          <Navigation className="h-3 w-3 mr-1" />
+                          <span className="font-medium">Ubicación del servicio</span>
+                        </div>
+                        <div className="text-xs text-green-600 mt-1">
+                          <div className="flex items-center">
+                            <MapPin className="h-3 w-3 mr-1" />
+                            <span className="truncate">{request.location_address}</span>
+                          </div>
+                          <div className="flex items-center justify-between mt-1">
+                            <span className="flex items-center">
+                              <Target className="h-3 w-3 mr-1" />
+                              {serviceDistances[request.id] ? (
+                                <span className="font-medium text-green-700">
+                                  Distancia: {serviceDistances[request.id].toFixed(1)} km
+                                </span>
+                              ) : (
+                                'Calculando distancia...'
+                              )}
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              Radio: {mechanicLocation.travel_radius_km || 10} km
+                            </span>
+                          </div>
+                        </div>
+                      </div>
                     )}
                     
-                    {request.status === 'accepted' && (
+                    <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
+                      <span className="flex items-center">
+                        <User className="h-3 w-3 mr-1" />
+                        {request.client?.name}
+                      </span>
+                      <span className="flex items-center">
+                        <Clock className="h-3 w-3 mr-1" />
+                        {request.estimated_duration_hours}h
+                      </span>
+                      {request.budget_max > 0 && (
+                        <span className="flex items-center">
+                          <DollarSign className="h-3 w-3 mr-1" />
+                          ${request.budget_max}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex gap-2">
                       <button
-                        onClick={() => handleStartService(Number(request.id))}
-                        className="bg-indigo-600 text-white px-3 py-1 rounded text-xs hover:bg-indigo-700"
+                        onClick={() => {
+                          setSelectedRequest(request);
+                          setShowDetailModal(true);
+                        }}
+                        className="flex-1 bg-gray-100 text-gray-700 px-3 py-1 rounded text-xs hover:bg-gray-200 flex items-center justify-center gap-1"
                       >
-                        Iniciar
+                        <Eye className="h-3 w-3" />
+                        Ver
                       </button>
-                    )}
+                      
+                      {request.status === 'pending' && (
+                        <>
+                          <button
+                            onClick={() => handleAcceptRequest(Number(request.id))}
+                            className="bg-green-600 text-white px-3 py-1 rounded text-xs hover:bg-green-700 flex items-center gap-1"
+                          >
+                            <CheckSquare className="h-3 w-3" />
+                            Aceptar
+                          </button>
+                          <button
+                            onClick={() => handleRejectRequest(Number(request.id))}
+                            className="bg-red-600 text-white px-3 py-1 rounded text-xs hover:bg-red-700"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </>
+                      )}
+                      
+                      {request.status === 'accepted' && (
+                        <button
+                          onClick={() => handleStartService(Number(request.id))}
+                          className="bg-indigo-600 text-white px-3 py-1 rounded text-xs hover:bg-indigo-700"
+                        >
+                          Iniciar
+                        </button>
+                      )}
+                    </div>
                   </div>
+                ))
+              ) : (
+                <div className="p-8 text-center text-gray-500">
+                  <Clock className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                  <p>No hay solicitudes disponibles</p>
+                  <p className="text-xs mt-1">Solo se muestran solicitudes de las últimas 5 horas</p>
                 </div>
-              ))
-            ) : (
-              <div className="p-8 text-center text-gray-500">
-                <Clock className="h-8 w-8 mx-auto mb-2 text-gray-400" />
-                <p>No hay solicitudes disponibles</p>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
 
@@ -431,6 +597,30 @@ const MechanicDashboard: React.FC = () => {
                   </div>
                   
                   <p className="text-sm text-gray-600 mb-2 line-clamp-2">{service.description}</p>
+                  
+                  {/* Información del Vehículo */}
+                  {service.vehicle && (
+                    <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-2 mb-3">
+                      <div className="flex items-center text-xs text-indigo-800">
+                        <Car className="h-3 w-3 mr-1" />
+                        <span className="font-medium">
+                          {service.vehicle.make} {service.vehicle.model} {service.vehicle.year}
+                        </span>
+                        {service.vehicle.license_plate && (
+                          <span className="ml-2 font-mono bg-indigo-100 px-1 rounded">
+                            {service.vehicle.license_plate}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center text-xs text-indigo-600 mt-1 space-x-2">
+                        <span>⚙️ {service.vehicle.transmission_type}</span>
+                        <span>⛽ {service.vehicle.fuel_type}</span>
+                        {service.vehicle.mileage && (
+                          <span>📊 {service.vehicle.mileage.toLocaleString()} km</span>
+                        )}
+                      </div>
+                    </div>
+                  )}
                   
                   <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
                     <span className="flex items-center">
@@ -571,8 +761,9 @@ const MechanicDashboard: React.FC = () => {
                   <p className="text-gray-600">{selectedRequest.description}</p>
                 </div>
 
-                {/* Request Details Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Request Details Grid - 3 columnas */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {/* Información del Cliente */}
                   <div className="space-y-4">
                     <h4 className="font-semibold text-gray-900">Información del Cliente</h4>
                     
@@ -594,11 +785,17 @@ const MechanicDashboard: React.FC = () => {
                         </div>
                       </div>
                     )}
-                  </div>
 
-                  <div className="space-y-4">
-                    <h4 className="font-semibold text-gray-900">Detalles del Servicio</h4>
-                    
+                    {selectedRequest.location_notes && (
+                      <div className="flex items-start">
+                        <MessageCircle className="h-5 w-5 text-gray-400 mr-3 mt-0.5" />
+                        <div>
+                          <div className="text-sm text-gray-600">Notas de ubicación</div>
+                          <div className="font-medium">{selectedRequest.location_notes}</div>
+                        </div>
+                      </div>
+                    )}
+
                     <div className="flex items-center">
                       <Clock className="h-5 w-5 text-gray-400 mr-3" />
                       <div>
@@ -624,6 +821,257 @@ const MechanicDashboard: React.FC = () => {
                         </div>
                       </div>
                     </div>
+
+                    <div className="flex items-center">
+                      <Calendar className="h-5 w-5 text-gray-400 mr-3" />
+                      <div>
+                        <div className="text-sm text-gray-600">Fecha de creación</div>
+                        <div className="font-medium">{formatDate(selectedRequest.created_at)}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Información del Vehículo */}
+                  <div className="space-y-4">
+                    <h4 className="font-semibold text-gray-900">Vehículo</h4>
+                    
+                    {selectedRequest.vehicle ? (
+                      <>
+                        <div className="flex items-center">
+                          <Car className="h-5 w-5 text-gray-400 mr-3" />
+                          <div>
+                            <div className="text-sm text-gray-600">Vehículo</div>
+                            <div className="font-medium">
+                              {selectedRequest.vehicle.make} {selectedRequest.vehicle.model} {selectedRequest.vehicle.year}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center">
+                          <div className="h-5 w-5 mr-3 flex items-center justify-center">
+                            <span className="text-gray-400 text-xs font-mono">🏷️</span>
+                          </div>
+                          <div>
+                            <div className="text-sm text-gray-600">Placa</div>
+                            <div className="font-medium">{selectedRequest.vehicle.license_plate}</div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center">
+                          <div className="h-5 w-5 mr-3 flex items-center justify-center">
+                            <span className="text-gray-400 text-xs">🎨</span>
+                          </div>
+                          <div>
+                            <div className="text-sm text-gray-600">Color</div>
+                            <div className="font-medium capitalize">{selectedRequest.vehicle.color}</div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center">
+                          <div className="h-5 w-5 mr-3 flex items-center justify-center">
+                            <span className="text-gray-400 text-xs">⚙️</span>
+                          </div>
+                          <div>
+                            <div className="text-sm text-gray-600">Transmisión</div>
+                            <div className="font-medium capitalize">{selectedRequest.vehicle.transmission_type}</div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center">
+                          <div className="h-5 w-5 mr-3 flex items-center justify-center">
+                            <span className="text-gray-400 text-xs">⛽</span>
+                          </div>
+                          <div>
+                            <div className="text-sm text-gray-600">Combustible</div>
+                            <div className="font-medium capitalize">{selectedRequest.vehicle.fuel_type}</div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center">
+                          <div className="h-5 w-5 mr-3 flex items-center justify-center">
+                            <span className="text-gray-400 text-xs">📊</span>
+                          </div>
+                          <div>
+                            <div className="text-sm text-gray-600">Kilometraje</div>
+                            <div className="font-medium">{selectedRequest.vehicle.mileage?.toLocaleString() || 'No especificado'} km</div>
+                          </div>
+                        </div>
+
+                        {selectedRequest.vehicle.engine_size && (
+                          <div className="flex items-center">
+                            <div className="h-5 w-5 mr-3 flex items-center justify-center">
+                              <span className="text-gray-400 text-xs">🔧</span>
+                            </div>
+                            <div>
+                              <div className="text-sm text-gray-600">Motor</div>
+                              <div className="font-medium">{selectedRequest.vehicle.engine_size}</div>
+                            </div>
+                          </div>
+                        )}
+
+                        {selectedRequest.vehicle.notes && (
+                          <div className="mt-3 p-3 bg-blue-50 rounded-lg">
+                            <div className="text-sm text-blue-800 font-medium mb-1">Notas del vehículo:</div>
+                            <div className="text-sm text-blue-700">{selectedRequest.vehicle.notes}</div>
+                          </div>
+                        )}
+
+                        <button
+                          onClick={() => setShowVehicleDetails(true)}
+                          className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
+                        >
+                          Ver detalles completos del vehículo →
+                        </button>
+                      </>
+                    ) : (
+                      <div className="text-sm text-gray-500 italic">
+                        No se especificó vehículo para este servicio
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Información del Servicio */}
+                  <div className="space-y-4">
+                    <h4 className="font-semibold text-gray-900">Ubicación y Distancia</h4>
+                    
+                    {selectedRequest.location_address && (
+                      <div className="flex items-start">
+                        <MapPin className="h-5 w-5 text-gray-400 mr-3 mt-0.5" />
+                        <div>
+                          <div className="text-sm text-gray-600">Dirección</div>
+                          <div className="font-medium">{selectedRequest.location_address}</div>
+                        </div>
+                      </div>
+                    )}
+
+                    {selectedRequest.location_notes && (
+                      <div className="flex items-start">
+                        <MessageCircle className="h-5 w-5 text-gray-400 mr-3 mt-0.5" />
+                        <div>
+                          <div className="text-sm text-gray-600">Notas de ubicación</div>
+                          <div className="font-medium text-sm">{selectedRequest.location_notes}</div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Información de distancia */}
+                    {mechanicLocation && selectedRequest.location_address ? (
+                      <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                        <div className="flex items-center mb-2">
+                          <Navigation className="h-4 w-4 text-green-600 mr-2" />
+                          <span className="text-sm font-medium text-green-800">Información de viaje</span>
+                        </div>
+                        <div className="space-y-2 text-sm">
+                          <div className="flex items-center justify-between">
+                            <span className="text-green-700">Tu ubicación:</span>
+                            <span className="text-green-600 text-xs">{mechanicLocation.address || 'Ubicación configurada'}</span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-green-700">Radio de viaje:</span>
+                            <span className="text-green-600 font-medium">{mechanicLocation.travel_radius_km || 10} km</span>
+                          </div>
+                          <div className="pt-2 border-t border-green-200">
+                            {calculatingDistance ? (
+                              <div className="flex items-center text-green-700 text-xs">
+                                <Loader className="h-3 w-3 animate-spin mr-1" />
+                                Calculando distancia...
+                              </div>
+                            ) : distanceError ? (
+                              <div className="text-red-600 text-xs">
+                                ❌ {distanceError}
+                              </div>
+                            ) : distanceInfo ? (
+                              <div className="space-y-1">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-green-700">Distancia:</span>
+                                  <span className="text-green-800 font-medium">{distanceInfo.distance.formatted}</span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                  <span className="text-green-700">Estado:</span>
+                                  <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                                    distanceInfo.radius_validation.status === 'optimal' ? 'bg-green-100 text-green-800' :
+                                    distanceInfo.radius_validation.status === 'good' ? 'bg-blue-100 text-blue-800' :
+                                    distanceInfo.radius_validation.status === 'limit' ? 'bg-yellow-100 text-yellow-800' :
+                                    'bg-red-100 text-red-800'
+                                  }`}>
+                                    {distanceInfo.radius_validation.percentage}% del radio
+                                  </span>
+                                </div>
+                                <div className="text-green-600 text-xs mt-1">
+                                  {distanceInfo.radius_validation.message}
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="text-green-700 text-xs">
+                                📊 Información de distancia no disponible
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ) : !mechanicLocation ? (
+                      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                        <div className="flex items-center mb-1">
+                          <AlertCircle className="h-4 w-4 text-yellow-600 mr-2" />
+                          <span className="text-sm font-medium text-yellow-800">Ubicación no configurada</span>
+                        </div>
+                        <div className="text-xs text-yellow-700">
+                          Configure su ubicación en el perfil para ver distancias
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                        <div className="text-sm text-gray-600">
+                          Coordenadas del servicio no disponibles
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex items-center">
+                      <div className="h-5 w-5 mr-3 flex items-center justify-center">
+                        <span className="text-gray-400 text-xs">🔧</span>
+                      </div>
+                      <div>
+                        <div className="text-sm text-gray-600">Tipo de servicio</div>
+                        <div className="font-medium capitalize">{selectedRequest.service_type}</div>
+                      </div>
+                    </div>
+
+                    {selectedRequest.is_emergency && (
+                      <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                        <div className="flex items-center text-red-800">
+                          <AlertCircle className="h-4 w-4 mr-2" />
+                          <span className="font-medium">🚨 EMERGENCIA</span>
+                        </div>
+                        <div className="text-sm text-red-600 mt-1">
+                          Este servicio requiere atención inmediata
+                        </div>
+                      </div>
+                    )}
+
+                    {selectedRequest.preferred_date && (
+                      <div className="flex items-center">
+                        <Calendar className="h-5 w-5 text-gray-400 mr-3" />
+                        <div>
+                          <div className="text-sm text-gray-600">Fecha preferida</div>
+                          <div className="font-medium">{formatDate(selectedRequest.preferred_date)}</div>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="bg-gray-50 border rounded-lg p-3">
+                      <div className="text-sm text-gray-600 mb-2">Estado del servicio:</div>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusLabels[selectedRequest.status]?.bg} ${statusLabels[selectedRequest.status]?.color}`}>
+                        {statusLabels[selectedRequest.status]?.label}
+                      </span>
+                    </div>
+
+                    {selectedRequest.final_cost && (
+                      <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                        <div className="text-sm text-green-800 font-medium">Costo final:</div>
+                        <div className="text-lg font-bold text-green-900">${selectedRequest.final_cost}</div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -683,6 +1131,164 @@ const MechanicDashboard: React.FC = () => {
                     </button>
                   )}
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Vehicle Details Modal */}
+      {showVehicleDetails && selectedRequest?.vehicle && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <div className="flex items-center gap-3">
+                  <Car className="h-6 w-6 text-blue-600" />
+                  <h2 className="text-xl font-semibold">Detalles Completos del Vehículo</h2>
+                </div>
+                <button
+                  onClick={() => setShowVehicleDetails(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <XCircle className="h-6 w-6" />
+                </button>
+              </div>
+
+              <div className="space-y-6">
+                {/* Header del vehículo */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <h3 className="text-xl font-bold text-blue-900 mb-2">
+                    {selectedRequest.vehicle.make} {selectedRequest.vehicle.model} {selectedRequest.vehicle.year}
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-blue-600 font-medium">Placa:</span>
+                      <span className="ml-2 font-mono">{selectedRequest.vehicle.license_plate}</span>
+                    </div>
+                    <div>
+                      <span className="text-blue-600 font-medium">Color:</span>
+                      <span className="ml-2 capitalize">{selectedRequest.vehicle.color}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Especificaciones técnicas */}
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-3">Especificaciones Técnicas</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex items-center">
+                      <span className="text-gray-400 mr-3">⚙️</span>
+                      <div>
+                        <div className="text-sm text-gray-600">Transmisión</div>
+                        <div className="font-medium capitalize">{selectedRequest.vehicle.transmission_type}</div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center">
+                      <span className="text-gray-400 mr-3">⛽</span>
+                      <div>
+                        <div className="text-sm text-gray-600">Tipo de combustible</div>
+                        <div className="font-medium capitalize">{selectedRequest.vehicle.fuel_type}</div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center">
+                      <span className="text-gray-400 mr-3">📊</span>
+                      <div>
+                        <div className="text-sm text-gray-600">Kilometraje</div>
+                        <div className="font-medium">{selectedRequest.vehicle.mileage?.toLocaleString() || 'No especificado'} km</div>
+                      </div>
+                    </div>
+
+                    {selectedRequest.vehicle.engine_size && (
+                      <div className="flex items-center">
+                        <span className="text-gray-400 mr-3">🔧</span>
+                        <div>
+                          <div className="text-sm text-gray-600">Motor</div>
+                          <div className="font-medium">{selectedRequest.vehicle.engine_size}</div>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex items-center">
+                      <span className="text-gray-400 mr-3">🗓️</span>
+                      <div>
+                        <div className="text-sm text-gray-600">Registrado</div>
+                        <div className="font-medium">{formatDate(selectedRequest.vehicle.created_at)}</div>
+                      </div>
+                    </div>
+
+                    {selectedRequest.vehicle.last_service_date && (
+                      <div className="flex items-center">
+                        <span className="text-gray-400 mr-3">🔧</span>
+                        <div>
+                          <div className="text-sm text-gray-600">Último servicio</div>
+                          <div className="font-medium">{formatDate(selectedRequest.vehicle.last_service_date)}</div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* VIN */}
+                {selectedRequest.vehicle.vin && (
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-2">Información Adicional</h4>
+                    <div className="bg-gray-50 border rounded-lg p-3">
+                      <div className="text-sm text-gray-600">Número VIN</div>
+                      <div className="font-mono text-sm bg-white border rounded px-2 py-1 mt-1">
+                        {selectedRequest.vehicle.vin}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Notas del vehículo */}
+                {selectedRequest.vehicle.notes && (
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-2">Notas del Propietario</h4>
+                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                      <div className="text-sm text-amber-800">{selectedRequest.vehicle.notes}</div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Recomendaciones para el mecánico */}
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <h4 className="font-semibold text-green-800 mb-2">💡 Información Útil para el Servicio</h4>
+                  <div className="text-sm text-green-700 space-y-1">
+                    <p>• <strong>Transmisión {selectedRequest.vehicle.transmission_type}:</strong> Considerar herramientas específicas</p>
+                    <p>• <strong>Combustible {selectedRequest.vehicle.fuel_type}:</strong> Verificar compatibilidad de repuestos</p>
+                    <p>• <strong>Kilometraje:</strong> {selectedRequest.vehicle.mileage?.toLocaleString() || 'No especificado'} km - evaluar desgaste</p>
+                    {selectedRequest.vehicle.engine_size && (
+                      <p>• <strong>Motor {selectedRequest.vehicle.engine_size}:</strong> Preparar herramientas adecuadas</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Estado del vehículo */}
+                <div className="border-t pt-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">Estado del vehículo:</span>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      selectedRequest.vehicle.is_active 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-red-100 text-red-800'
+                    }`}>
+                      {selectedRequest.vehicle.is_active ? 'Activo' : 'Inactivo'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end mt-6 pt-4 border-t">
+                <button
+                  onClick={() => setShowVehicleDetails(false)}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                  Cerrar
+                </button>
               </div>
             </div>
           </div>

@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { mechanicAPI } from '../../services/api';
 import type { MechanicProfile as MechanicProfileType, CreateMechanicProfileRequest } from '../../types';
+import NavigationHeader from '../../components/NavigationHeader';
+import LocationSelector from '../../components/shared/LocationSelector';
+import useLocation from '../../hooks/useLocation';
+import { useGeolocation } from '../../hooks/useGeolocation';
 import { 
   User, 
   Star, 
@@ -14,7 +18,10 @@ import {
   AlertCircle,
   Loader,
   Plus,
-  X
+  X,
+  Navigation,
+  Target,
+  Crosshair
 } from 'lucide-react';
 
 const MechanicProfileComponent: React.FC = () => {
@@ -23,6 +30,10 @@ const MechanicProfileComponent: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  // Location hooks
+  const geolocation = useGeolocation();
+  const location = useLocation();
 
   const [editData, setEditData] = useState<Partial<CreateMechanicProfileRequest>>({
     specializations: [],
@@ -33,7 +44,10 @@ const MechanicProfileComponent: React.FC = () => {
     bio: '',
     certifications: [],
     accepts_weekend_jobs: false,
-    accepts_night_jobs: false
+    accepts_night_jobs: false,
+    address: '',
+    latitude: undefined,
+    longitude: undefined
   });
 
   const [newSpecialization, setNewSpecialization] = useState('');
@@ -57,10 +71,15 @@ const MechanicProfileComponent: React.FC = () => {
   }, []);
 
   const fetchProfile = async () => {
+    console.log('🔍 Iniciando fetchProfile...');
     setIsLoading(true);
     try {
+      console.log('📡 Llamando a mechanicAPI.getProfile()...');
       const result = await mechanicAPI.getProfile();
+      console.log('📦 Resultado de getProfile:', result);
+      
       if (result.data) {
+        console.log('✅ Datos del perfil encontrados:', result.data);
         setProfile(result.data);
         setEditData({
           specializations: result.data.specializations,
@@ -71,19 +90,32 @@ const MechanicProfileComponent: React.FC = () => {
           bio: result.data.bio || '',
           certifications: result.data.certifications,
           accepts_weekend_jobs: result.data.accepts_weekend_jobs,
-          accepts_night_jobs: result.data.accepts_night_jobs
+          accepts_night_jobs: result.data.accepts_night_jobs,
+          address: '', // NO cargar dirección guardada para permitir autodetección
+          latitude: undefined, // NO cargar coordenadas guardadas
+          longitude: undefined // NO cargar coordenadas guardadas
         });
+      } else {
+        console.log('❌ No se encontraron datos en result.data');
       }
     } catch (err: any) {
+      console.log('🚨 Error en fetchProfile:', err);
+      console.log('🚨 Error response:', err.response);
+      console.log('🚨 Error status:', err.response?.status);
+      console.log('🚨 Error data:', err.response?.data);
+      
       if (err.response?.status === 404) {
         // No hay perfil, mostrar formulario de creación
+        console.log('📝 Perfil no encontrado, mostrando formulario de creación');
         setError('Necesitas crear tu perfil de mecánico');
         setIsEditing(true);
       } else {
+        console.log('⚠️ Error diferente a 404');
         setError('Error al cargar perfil: ' + (err.response?.data?.message || err.message));
       }
     } finally {
       setIsLoading(false);
+      console.log('🏁 fetchProfile terminado');
     }
   };
 
@@ -97,7 +129,7 @@ const MechanicProfileComponent: React.FC = () => {
     try {
       if (profile) {
         // Actualizar perfil existente
-        await mechanicAPI.updateProfile(profile.id, editData);
+        await mechanicAPI.updateProfile(editData);
         setSuccess('Perfil actualizado exitosamente');
       } else {
         // Crear nuevo perfil
@@ -111,6 +143,32 @@ const MechanicProfileComponent: React.FC = () => {
       setError('Error al guardar perfil: ' + (err.response?.data?.message || err.message));
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleLocationChange = (location: string, coordinates?: { lat: number; lng: number }) => {
+    setEditData(prev => ({
+      ...prev,
+      address: location,
+      latitude: coordinates?.lat,
+      longitude: coordinates?.lng
+    }));
+  };
+
+  const handleGetCurrentLocation = async () => {
+    try {
+      await geolocation.getCurrentPosition();
+      if (geolocation.latitude && geolocation.longitude) {
+        setEditData(prev => ({
+          ...prev,
+          latitude: geolocation.latitude || undefined,
+          longitude: geolocation.longitude || undefined,
+          address: geolocation.address || ''
+        }));
+        setSuccess('Ubicación obtenida correctamente');
+      }
+    } catch (err) {
+      setError('Error al obtener la ubicación');
     }
   };
 
@@ -183,6 +241,8 @@ const MechanicProfileComponent: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      <NavigationHeader />
+      
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -275,6 +335,31 @@ const MechanicProfileComponent: React.FC = () => {
               <div className="mb-6">
                 <h3 className="font-semibold text-gray-900 mb-2">Descripción</h3>
                 <p className="text-gray-700">{profile.bio}</p>
+              </div>
+            )}
+
+            {/* Location Info */}
+            {(profile.latitude && profile.longitude) && (
+              <div className="mb-6">
+                <h3 className="font-semibold text-gray-900 mb-2">Ubicación de Servicio</h3>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="flex items-start">
+                    <MapPin className="h-5 w-5 text-gray-400 mr-3 mt-0.5" />
+                    <div>
+                      {profile.address && (
+                        <p className="text-gray-700 mb-1">{profile.address}</p>
+                      )}
+                      <p className="text-sm text-gray-500">
+                        Coordenadas: {Number(profile.latitude).toFixed(4)}, {Number(profile.longitude).toFixed(4)}
+                      </p>
+                      {profile.location_updated_at && (
+                        <p className="text-xs text-gray-400 mt-1">
+                          Actualizada: {new Date(profile.location_updated_at).toLocaleDateString()}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
           </div>
@@ -452,6 +537,15 @@ const MechanicProfileComponent: React.FC = () => {
                 rows={3}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500"
                 placeholder="Cuéntanos sobre tu experiencia y especialidades..."
+              />
+            </div>
+
+            {/* Location */}
+            <div>
+              <LocationSelector
+                value={editData.address || ''}
+                onChange={handleLocationChange}
+                placeholder="Ej: Calle 123, Colonia, Ciudad, Estado"
               />
             </div>
 

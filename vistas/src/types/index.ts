@@ -151,6 +151,10 @@ export interface MechanicProfile {
   minimum_service_fee?: string;
   accepts_weekend_jobs: boolean;
   accepts_night_jobs: boolean;
+  address?: string;
+  latitude?: number | string;
+  longitude?: number | string;
+  location_updated_at?: string;
   created_at: string;
   updated_at: string;
   user?: User;
@@ -168,6 +172,9 @@ export interface CreateMechanicProfileRequest {
   certifications: string[];
   accepts_weekend_jobs: boolean;
   accepts_night_jobs: boolean;
+  address?: string;
+  latitude?: number | string;
+  longitude?: number | string;
 }
 
 // ==========================================
@@ -214,6 +221,8 @@ export interface ExtendedServiceRequest {
   preferred_date?: string;
   location_address?: string;
   location_notes?: string;
+  location_latitude?: number;
+  location_longitude?: number;
   vehicle_id?: number;
   preferred_mechanic_id?: number;
   status: 'pending' | 'accepted' | 'in_progress' | 'completed' | 'cancelled' | 'rejected';
@@ -236,6 +245,8 @@ export interface ServiceRequestCreate {
   preferred_date?: string;
   location_address?: string;
   location_notes?: string;
+  location_latitude?: number;
+  location_longitude?: number;
   vehicle_id?: number | null;
   preferred_mechanic_id?: number | null;
 }

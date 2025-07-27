@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import RoleProtectedRoute from './components/RoleProtectedRoute';
 import Welcome from './pages/auth/Welcome';
@@ -19,8 +20,9 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
+    <ThemeProvider>
+      <AuthProvider>
+        <Router>
         <Routes>
           {/* Rutas públicas */}
           <Route path="/" element={<Welcome />} />
@@ -193,6 +195,7 @@ function App() {
         </Routes>
       </Router>
     </AuthProvider>
+    </ThemeProvider>
   );
 }
 

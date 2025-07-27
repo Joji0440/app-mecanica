@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { serviceRequestAPI } from '../../services/api';
-import type { ExtendedServiceRequest, ServiceRequestCreate } from '../../types';
+import { serviceRequestAPI, vehicleAPI } from '../../services/api';
+import type { ExtendedServiceRequest, ServiceRequestCreate, Vehicle } from '../../types';
 import NavigationHeader from '../../components/NavigationHeader';
+import ServiceDiagnosticWizard from '../../components/ServiceDiagnosticWizard';
+import LocationSelector from '../../components/shared/LocationSelector';
 import { 
   Calendar,
   Clock,
@@ -11,12 +13,16 @@ import {
   XCircle,
   AlertCircle,
   Eye,
-  Plus,
   Search,
   Filter,
   MessageCircle,
   Loader,
-  Trash2
+  Trash2,
+  Brain,
+  Settings,
+  Car,
+  AlertTriangle,
+  ShieldAlert
 } from 'lucide-react';
 
 interface ServiceRequestFilters {
@@ -29,8 +35,15 @@ const ServiceManagement: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showGuidedWizard, setShowGuidedWizard] = useState(false);
   const [selectedService, setSelectedService] = useState<ExtendedServiceRequest | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  
+  // Estados para modo experto mejorado
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [showExpertWarning, setShowExpertWarning] = useState(true);
+  const [acceptedExpertTerms, setAcceptedExpertTerms] = useState(false);
+  const [showVehicleDetails, setShowVehicleDetails] = useState(false);
   
   const [filters, setFilters] = useState<ServiceRequestFilters>({});
   
@@ -45,6 +58,8 @@ const ServiceManagement: React.FC = () => {
     preferred_date: '',
     location_address: '',
     location_notes: '',
+    location_latitude: undefined,
+    location_longitude: undefined,
     vehicle_id: null,
     preferred_mechanic_id: null
   });
@@ -75,6 +90,7 @@ const ServiceManagement: React.FC = () => {
 
   useEffect(() => {
     fetchServices();
+    fetchVehicles();
   }, []);
 
   const fetchServices = async () => {
@@ -89,11 +105,33 @@ const ServiceManagement: React.FC = () => {
     }
   };
 
+  const fetchVehicles = async () => {
+    try {
+      const result = await vehicleAPI.getVehicles();
+      setVehicles(result || []);
+    } catch (err: any) {
+      console.error('Error al cargar vehículos:', err);
+      // No mostramos error para vehículos ya que no es crítico
+    }
+  };
+
   const handleCreateService = async () => {
     if (!createData.description.trim() || !createData.title.trim()) {
       setError('Por favor completa los campos requeridos');
       return;
     }
+
+    // DEBUG: Verificar qué datos se están enviando
+    console.log('🚀 FRONTEND - Enviando datos de servicio:', {
+      title: createData.title,
+      description: createData.description,
+      location_address: createData.location_address,
+      location_latitude: createData.location_latitude,
+      location_longitude: createData.location_longitude,
+      service_type: createData.service_type,
+      urgency_level: createData.urgency_level,
+      full_create_data: createData
+    });
 
     try {
       setIsLoading(true);
@@ -148,9 +186,120 @@ const ServiceManagement: React.FC = () => {
       preferred_date: '',
       location_address: '',
       location_notes: '',
+      location_latitude: undefined,
+      location_longitude: undefined,
       vehicle_id: null,
       preferred_mechanic_id: null
     });
+    setShowExpertWarning(true);
+    setAcceptedExpertTerms(false);
+  };
+
+  const handleExpertModeOpen = () => {
+    setShowCreateModal(true);
+    setShowExpertWarning(true);
+    setAcceptedExpertTerms(false);
+  };
+
+  const handleLocationUpdate = (location: string, coordinates?: { lat: number; lng: number }) => {
+    console.log('📍 FRONTEND - handleLocationUpdate EJECUTADO:', {
+      function_called: 'handleLocationUpdate',
+      location,
+      coordinates,
+      has_coordinates: !!coordinates,
+      lat: coordinates?.lat,
+      lng: coordinates?.lng,
+      timestamp: new Date().toISOString()
+    });
+    
+    setCreateData(prev => {
+      const newData = {
+        ...prev,
+        location_address: location,
+        location_latitude: coordinates?.lat,
+        location_longitude: coordinates?.lng
+      };
+      
+      console.log('🔄 FRONTEND - Actualizando createData:', {
+        previous_data: {
+          location_address: prev.location_address,
+          location_latitude: prev.location_latitude,
+          location_longitude: prev.location_longitude
+        },
+        new_data: {
+          location_address: newData.location_address,
+          location_latitude: newData.location_latitude,
+          location_longitude: newData.location_longitude
+        }
+      });
+      
+      return newData;
+    });
+  };
+
+  const handleLocationNotesChange = (notes: string) => {
+    setCreateData(prev => ({
+      ...prev,
+      location_notes: notes
+    }));
+  };
+
+  const handleGuidedDiagnosisComplete = async (diagnosticData: any) => {
+    try {
+      setIsLoading(true);
+      
+      console.log('🎯 FRONTEND - Diagnóstico guiado completado:', {
+        diagnosticData,
+        finalRequest: diagnosticData.finalRequest,
+        location: diagnosticData.finalRequest?.location,
+        coordinates: diagnosticData.finalRequest?.coordinates
+      });
+      
+      // Convertir los datos del diagnóstico guiado al formato esperado por la API
+      const serviceRequest: ServiceRequestCreate = {
+        title: diagnosticData.diagnosis?.problems[0]?.problem.name || `Diagnóstico: ${diagnosticData.category}`,
+        description: `Diagnóstico asistido por IA:\n\nProblema identificado: ${diagnosticData.diagnosis?.problems[0]?.problem.name}\n\nDescripción: ${diagnosticData.diagnosis?.problems[0]?.problem.description}\n\nSíntomas reportados: ${diagnosticData.symptoms.length} síntomas\nVehículo: ${diagnosticData.vehicleInfo.make} ${diagnosticData.vehicleInfo.model} ${diagnosticData.vehicleInfo.year}\n\nRecomendaciones del sistema:\n${diagnosticData.diagnosis?.recommendations?.join('\n') || 'Contactar mecánico para revisión'}`,
+        service_type: 'diagnostic',
+        urgency_level: mapUrgencyLevel(diagnosticData.diagnosis?.urgencyLevel || 'medium'),
+        estimated_duration_hours: diagnosticData.diagnosis?.problems[0]?.problem.estimatedTime?.average || 2,
+        budget_max: diagnosticData.finalRequest.maxBudget || diagnosticData.diagnosis?.estimatedCost?.max || 0,
+        is_emergency: diagnosticData.diagnosis?.urgencyLevel === 'emergency',
+        preferred_date: '',
+        location_address: diagnosticData.finalRequest.location,
+        location_notes: `Diagnóstico guiado - Confianza: ${Math.round((diagnosticData.diagnosis?.overallConfidence || 0) * 100)}%`,
+        location_latitude: diagnosticData.finalRequest?.coordinates?.lat,
+        location_longitude: diagnosticData.finalRequest?.coordinates?.lng,
+        vehicle_id: diagnosticData.vehicle_id || null,
+        preferred_mechanic_id: null
+      };
+
+      console.log('🚀 FRONTEND - Creando servicio desde diagnóstico guiado:', {
+        serviceRequest,
+        coordinates_included: {
+          latitude: serviceRequest.location_latitude,
+          longitude: serviceRequest.location_longitude,
+          has_coordinates: !!(serviceRequest.location_latitude && serviceRequest.location_longitude)
+        }
+      });
+
+      await serviceRequestAPI.create(serviceRequest);
+      await fetchServices();
+      setShowGuidedWizard(false);
+    } catch (err: any) {
+      setError('Error al crear servicio desde diagnóstico: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const mapUrgencyLevel = (aiUrgency: string): 'baja' | 'media' | 'alta' | 'critica' => {
+    switch (aiUrgency) {
+      case 'emergency': return 'critica';
+      case 'high': return 'alta';
+      case 'medium': return 'media';
+      case 'low': return 'baja';
+      default: return 'media';
+    }
   };
 
   const filteredServices = services.filter(service => {
@@ -198,13 +347,23 @@ const ServiceManagement: React.FC = () => {
               <p className="text-gray-600">Gestiona tus solicitudes de servicio automotriz</p>
             </div>
             
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center gap-2"
-            >
-              <Plus className="h-4 w-4" />
-              Nueva Solicitud
-            </button>
+            <div className="flex space-x-3">
+              <button
+                onClick={() => setShowGuidedWizard(true)}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2 transition-colors"
+              >
+                <Brain className="h-4 w-4" />
+                Diagnóstico Guiado
+              </button>
+              
+              <button
+                onClick={handleExpertModeOpen}
+                className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center gap-2 transition-colors"
+              >
+                <Settings className="h-4 w-4" />
+                Modo Experto
+              </button>
+            </div>
           </div>
 
       {/* Filters */}
@@ -312,6 +471,17 @@ const ServiceManagement: React.FC = () => {
                     <span>Mecánico: {service.mechanic?.user?.name}</span>
                   </div>
                 )}
+
+                {/* Información del Vehículo */}
+                {service.vehicle && (
+                  <div className="flex items-center text-sm text-gray-600">
+                    <Car className="h-4 w-4 mr-2" />
+                    <span className="line-clamp-1">
+                      {service.vehicle.make} {service.vehicle.model} {service.vehicle.year}
+                      {service.vehicle.license_plate && ` - ${service.vehicle.license_plate}`}
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Description */}
@@ -378,10 +548,13 @@ const ServiceManagement: React.FC = () => {
       {/* Create Service Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-semibold">Nueva Solicitud de Servicio</h2>
+                <div className="flex items-center gap-3">
+                  <ShieldAlert className="h-6 w-6 text-amber-600" />
+                  <h2 className="text-xl font-semibold">Modo Experto - Nueva Solicitud</h2>
+                </div>
                 <button
                   onClick={() => setShowCreateModal(false)}
                   className="text-gray-500 hover:text-gray-700"
@@ -390,8 +563,94 @@ const ServiceManagement: React.FC = () => {
                 </button>
               </div>
 
-              <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); handleCreateService(); }}>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Aviso de Responsabilidad para Modo Experto */}
+              {showExpertWarning && (
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="h-6 w-6 text-amber-600 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-amber-800 mb-2">
+                        ⚠️ Importante: Responsabilidades del Modo Experto
+                      </h3>
+                      <div className="text-sm text-amber-700 space-y-2">
+                        <p>
+                          <strong>El Modo Experto está diseñado únicamente para usuarios con conocimiento técnico automotriz.</strong>
+                        </p>
+                        <p>
+                          Al utilizar este modo, usted declara que:
+                        </p>
+                        <ul className="list-disc list-inside space-y-1 ml-2">
+                          <li>Posee conocimientos técnicos sobre mecánica automotriz</li>
+                          <li>Ha identificado correctamente la falla o problema del vehículo</li>
+                          <li>Comprende las implicaciones de crear solicitudes incorrectas</li>
+                        </ul>
+                        <div className="bg-amber-100 border border-amber-300 rounded p-3 mt-3">
+                          <p className="font-medium text-amber-800">
+                            ⚠️ Advertencia sobre solicitudes incorrectas:
+                          </p>
+                          <p className="text-amber-700 text-xs mt-1">
+                            Las solicitudes basadas en diagnósticos erróneos, información falsa o descripciones 
+                            inexactas pueden resultar en: <strong>costos adicionales de diagnóstico, 
+                            tarifas por servicios no solicitados, suspensión temporal o permanente de la cuenta, 
+                            y responsabilidad por gastos innecesarios del mecánico.</strong>
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between mt-4">
+                        <label className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={acceptedExpertTerms}
+                            onChange={(e) => setAcceptedExpertTerms(e.target.checked)}
+                            className="h-4 w-4 text-indigo-600 border-amber-300 rounded"
+                          />
+                          <span className="text-sm font-medium text-amber-800">
+                            He leído y acepto las responsabilidades del Modo Experto
+                          </span>
+                        </label>
+                        <button
+                          onClick={() => setShowExpertWarning(false)}
+                          disabled={!acceptedExpertTerms}
+                          className="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                        >
+                          Continuar
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Formulario principal - solo visible después de aceptar términos */}
+              {!showExpertWarning && (
+                <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); handleCreateService(); }}>
+                  
+                  {/* Selección de Vehículo */}
+                  {vehicles.length > 0 && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <h3 className="flex items-center gap-2 font-semibold text-blue-800 mb-3">
+                        <Car className="h-5 w-5" />
+                        Seleccionar Vehículo (Opcional)
+                      </h3>
+                      <select
+                        value={createData.vehicle_id || ''}
+                        onChange={(e) => setCreateData(prev => ({ ...prev, vehicle_id: e.target.value ? parseInt(e.target.value) : null }))}
+                        className="w-full border border-blue-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value="">Seleccionar vehículo registrado...</option>
+                        {vehicles.map(vehicle => (
+                          <option key={vehicle.id} value={vehicle.id}>
+                            {vehicle.make} {vehicle.model} {vehicle.year} - {vehicle.license_plate}
+                          </option>
+                        ))}
+                      </select>
+                      <p className="text-blue-600 text-xs mt-2">
+                        💡 Seleccionar un vehículo registrado ayuda al mecánico a preparar mejor el servicio
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Título *
@@ -433,6 +692,21 @@ const ServiceManagement: React.FC = () => {
                     rows={3}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500"
                     placeholder="Describe detalladamente el problema o servicio requerido..."
+                  />
+                </div>
+
+                {/* Sección de Ubicación con Mapa */}
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <h3 className="flex items-center gap-2 font-semibold text-green-800 mb-3">
+                    <MapPin className="h-5 w-5" />
+                    Ubicación del Servicio
+                  </h3>
+                  <LocationSelector
+                    value={createData.location_address || ''}
+                    onChange={handleLocationUpdate}
+                    onLocationNotesChange={handleLocationNotesChange}
+                    locationNotes={createData.location_notes || ''}
+                    placeholder="¿Dónde necesitas el servicio?"
                   />
                 </div>
 
@@ -481,32 +755,6 @@ const ServiceManagement: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Dirección del Servicio
-                  </label>
-                  <input
-                    type="text"
-                    value={createData.location_address}
-                    onChange={(e) => setCreateData(prev => ({ ...prev, location_address: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500"
-                    placeholder="Dirección donde se realizará el servicio"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Notas adicionales de ubicación
-                  </label>
-                  <textarea
-                    value={createData.location_notes}
-                    onChange={(e) => setCreateData(prev => ({ ...prev, location_notes: e.target.value }))}
-                    rows={2}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500"
-                    placeholder="Referencias, puntos de encuentro, etc..."
-                  />
-                </div>
-
-                <div>
                   <label className="flex items-center">
                     <input
                       type="checkbox"
@@ -535,6 +783,7 @@ const ServiceManagement: React.FC = () => {
                   </button>
                 </div>
               </form>
+              )}
             </div>
           </div>
         </div>
@@ -568,7 +817,7 @@ const ServiceManagement: React.FC = () => {
                 </div>
 
                 {/* Service Details Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   <div className="space-y-4">
                     <h4 className="font-semibold text-gray-900">Información del Servicio</h4>
                     
@@ -605,6 +854,83 @@ const ServiceManagement: React.FC = () => {
                         <div className="font-medium">{formatDate(selectedService.created_at)}</div>
                       </div>
                     </div>
+                  </div>
+
+                  {/* Información del Vehículo */}
+                  <div className="space-y-4">
+                    <h4 className="font-semibold text-gray-900">Vehículo</h4>
+                    
+                    {selectedService.vehicle ? (
+                      <>
+                        <div className="flex items-center">
+                          <Car className="h-5 w-5 text-gray-400 mr-3" />
+                          <div>
+                            <div className="text-sm text-gray-600">Vehículo</div>
+                            <div className="font-medium">
+                              {selectedService.vehicle.make} {selectedService.vehicle.model} {selectedService.vehicle.year}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center">
+                          <div className="h-5 w-5 mr-3 flex items-center justify-center">
+                            <span className="text-gray-400 text-xs font-mono">🏷️</span>
+                          </div>
+                          <div>
+                            <div className="text-sm text-gray-600">Placa</div>
+                            <div className="font-medium">{selectedService.vehicle.license_plate}</div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center">
+                          <div className="h-5 w-5 mr-3 flex items-center justify-center">
+                            <span className="text-gray-400 text-xs">⚙️</span>
+                          </div>
+                          <div>
+                            <div className="text-sm text-gray-600">Transmisión</div>
+                            <div className="font-medium capitalize">{selectedService.vehicle.transmission_type}</div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center">
+                          <div className="h-5 w-5 mr-3 flex items-center justify-center">
+                            <span className="text-gray-400 text-xs">⛽</span>
+                          </div>
+                          <div>
+                            <div className="text-sm text-gray-600">Combustible</div>
+                            <div className="font-medium capitalize">{selectedService.vehicle.fuel_type}</div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center">
+                          <div className="h-5 w-5 mr-3 flex items-center justify-center">
+                            <span className="text-gray-400 text-xs">📊</span>
+                          </div>
+                          <div>
+                            <div className="text-sm text-gray-600">Kilometraje</div>
+                            <div className="font-medium">{selectedService.vehicle.mileage?.toLocaleString() || 'No especificado'} km</div>
+                          </div>
+                        </div>
+
+                        {selectedService.vehicle.notes && (
+                          <div className="mt-3 p-3 bg-blue-50 rounded-lg">
+                            <div className="text-sm text-blue-800 font-medium mb-1">Notas del vehículo:</div>
+                            <div className="text-sm text-blue-700">{selectedService.vehicle.notes}</div>
+                          </div>
+                        )}
+
+                        <button
+                          onClick={() => setShowVehicleDetails(true)}
+                          className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
+                        >
+                          Ver detalles completos del vehículo →
+                        </button>
+                      </>
+                    ) : (
+                      <div className="text-sm text-gray-500 italic">
+                        No se especificó vehículo para este servicio
+                      </div>
+                    )}
                   </div>
 
                   <div className="space-y-4">
@@ -679,6 +1005,159 @@ const ServiceManagement: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Vehicle Details Modal */}
+      {showVehicleDetails && selectedService?.vehicle && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <div className="flex items-center gap-3">
+                  <Car className="h-6 w-6 text-blue-600" />
+                  <h2 className="text-xl font-semibold">Detalles del Vehículo</h2>
+                </div>
+                <button
+                  onClick={() => setShowVehicleDetails(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <XCircle className="h-6 w-6" />
+                </button>
+              </div>
+
+              <div className="space-y-6">
+                {/* Header del vehículo */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <h3 className="text-xl font-bold text-blue-900 mb-2">
+                    {selectedService.vehicle.make} {selectedService.vehicle.model} {selectedService.vehicle.year}
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-blue-600 font-medium">Placa:</span>
+                      <span className="ml-2 font-mono">{selectedService.vehicle.license_plate}</span>
+                    </div>
+                    <div>
+                      <span className="text-blue-600 font-medium">Color:</span>
+                      <span className="ml-2 capitalize">{selectedService.vehicle.color}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Especificaciones técnicas */}
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-3">Especificaciones Técnicas</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex items-center">
+                      <span className="text-gray-400 mr-3">⚙️</span>
+                      <div>
+                        <div className="text-sm text-gray-600">Transmisión</div>
+                        <div className="font-medium capitalize">{selectedService.vehicle.transmission_type}</div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center">
+                      <span className="text-gray-400 mr-3">⛽</span>
+                      <div>
+                        <div className="text-sm text-gray-600">Tipo de combustible</div>
+                        <div className="font-medium capitalize">{selectedService.vehicle.fuel_type}</div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center">
+                      <span className="text-gray-400 mr-3">📊</span>
+                      <div>
+                        <div className="text-sm text-gray-600">Kilometraje</div>
+                        <div className="font-medium">{selectedService.vehicle.mileage?.toLocaleString() || 'No especificado'} km</div>
+                      </div>
+                    </div>
+
+                    {selectedService.vehicle.engine_size && (
+                      <div className="flex items-center">
+                        <span className="text-gray-400 mr-3">🔧</span>
+                        <div>
+                          <div className="text-sm text-gray-600">Motor</div>
+                          <div className="font-medium">{selectedService.vehicle.engine_size}</div>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex items-center">
+                      <span className="text-gray-400 mr-3">🗓️</span>
+                      <div>
+                        <div className="text-sm text-gray-600">Registrado</div>
+                        <div className="font-medium">{formatDate(selectedService.vehicle.created_at)}</div>
+                      </div>
+                    </div>
+
+                    {selectedService.vehicle.last_service_date && (
+                      <div className="flex items-center">
+                        <span className="text-gray-400 mr-3">🔧</span>
+                        <div>
+                          <div className="text-sm text-gray-600">Último servicio</div>
+                          <div className="font-medium">{formatDate(selectedService.vehicle.last_service_date)}</div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* VIN */}
+                {selectedService.vehicle.vin && (
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-2">Información Adicional</h4>
+                    <div className="bg-gray-50 border rounded-lg p-3">
+                      <div className="text-sm text-gray-600">Número VIN</div>
+                      <div className="font-mono text-sm bg-white border rounded px-2 py-1 mt-1">
+                        {selectedService.vehicle.vin}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Notas del vehículo */}
+                {selectedService.vehicle.notes && (
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-2">Notas del Propietario</h4>
+                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                      <div className="text-sm text-amber-800">{selectedService.vehicle.notes}</div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Estado del vehículo */}
+                <div className="border-t pt-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">Estado del vehículo:</span>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      selectedService.vehicle.is_active 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-red-100 text-red-800'
+                    }`}>
+                      {selectedService.vehicle.is_active ? 'Activo' : 'Inactivo'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end mt-6 pt-4 border-t">
+                <button
+                  onClick={() => setShowVehicleDetails(false)}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                  Cerrar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Guided Diagnostic Wizard */}
+      {showGuidedWizard && (
+        <ServiceDiagnosticWizard
+          onComplete={handleGuidedDiagnosisComplete}
+          onCancel={() => setShowGuidedWizard(false)}
+        />
       )}
         </div>
       </div>

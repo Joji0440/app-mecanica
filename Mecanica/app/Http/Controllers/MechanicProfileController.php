@@ -180,6 +180,9 @@ class MechanicProfileController extends Controller
                 'accepts_weekend_jobs' => 'required|boolean',
                 'accepts_night_jobs' => 'required|boolean',
                 'availability_schedule' => 'nullable|array',
+                'address' => 'nullable|string|max:255',
+                'latitude' => 'nullable|numeric|between:-90,90',
+                'longitude' => 'nullable|numeric|between:-180,180',
             ]);
 
             $validatedData['user_id'] = $user->id;
@@ -235,6 +238,67 @@ class MechanicProfileController extends Controller
                 'message' => 'Error al obtener el perfil de mecánico',
                 'error' => $e->getMessage()
             ], 500);
+        }
+    }
+
+    /**
+     * Actualizar el perfil del mecánico actual (sin ID)
+     */
+    public function updateMyProfile(Request $request): JsonResponse
+    {
+        try {
+            $user = $request->user();
+            
+            // Solo mecánicos pueden actualizar su perfil
+            if (!$user->hasRole('mecanico')) {
+                return response()->json([
+                    'message' => 'Solo los mecánicos pueden actualizar su perfil'
+                ], 403);
+            }
+
+            $profile = $user->mechanicProfile;
+            
+            if (!$profile) {
+                return response()->json([
+                    'message' => 'No tienes un perfil de mecánico creado. Usa el método de creación.'
+                ], 404);
+            }
+
+            $rules = [
+                'specializations' => 'sometimes|array|min:1',
+                'specializations.*' => 'required|string|in:motor,transmision,frenos,suspension,electrico,aire_acondicionado,diagnostico,carroceria,llantas,otros',
+                'experience_years' => 'sometimes|integer|min:0|max:50',
+                'hourly_rate' => 'sometimes|numeric|min:10|max:500',
+                'travel_radius' => 'sometimes|integer|min:1|max:100',
+                'emergency_available' => 'sometimes|boolean',
+                'is_available' => 'sometimes|boolean',
+                'bio' => 'nullable|string|max:1000',
+                'certifications' => 'nullable|array',
+                'certifications.*' => 'string|max:200',
+                'tools_owned' => 'nullable|array',
+                'tools_owned.*' => 'string|in:basicas,scanner,elevador,compresor,soldadora,multimetro,especializadas',
+                'minimum_service_fee' => 'nullable|numeric|min:0|max:200',
+                'accepts_weekend_jobs' => 'sometimes|boolean',
+                'accepts_night_jobs' => 'sometimes|boolean',
+                'availability_schedule' => 'nullable|array',
+                'address' => 'nullable|string|max:255',
+                'latitude' => 'nullable|numeric|between:-90,90',
+                'longitude' => 'nullable|numeric|between:-180,180',
+            ];
+
+            $validatedData = $request->validate($rules);
+
+            $profile->update($validatedData);
+
+            return response()->json([
+                'message' => 'Perfil de mecánico actualizado exitosamente',
+                'data' => $profile->fresh()->load('user:id,name,email')
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al actualizar perfil de mecánico',
+                'error' => $e->getMessage()
+            ], 422);
         }
     }
 

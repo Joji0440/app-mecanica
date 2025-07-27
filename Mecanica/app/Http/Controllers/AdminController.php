@@ -125,8 +125,8 @@ class AdminController extends Controller
         }
 
         // Prevenir eliminar el último admin
-        if ($user->hasRole('admin')) {
-            $adminCount = User::role('admin')->count();
+        if ($user->hasRole('administrador')) {
+            $adminCount = User::role('administrador')->count();
             if ($adminCount <= 1) {
                 return response()->json([
                     'message' => 'No se puede eliminar el último administrador'
@@ -182,8 +182,8 @@ class AdminController extends Controller
         }
 
         // Prevenir remover rol admin del último admin
-        if ($request->role === 'admin' && $user->hasRole('admin')) {
-            $adminCount = User::role('admin')->count();
+        if ($request->role === 'administrador' && $user->hasRole('administrador')) {
+            $adminCount = User::role('administrador')->count();
             if ($adminCount <= 1) {
                 return response()->json([
                     'message' => 'No se puede remover el rol del último administrador'
@@ -316,11 +316,11 @@ class AdminController extends Controller
                 'password' => bcrypt($request->password),
             ]);
 
-            // Asignar roles si se proporcionan, sino asignar rol 'user' por defecto
+            // Asignar roles si se proporcionan, sino asignar rol 'cliente' por defecto
             if ($request->has('roles') && !empty($request->roles)) {
                 $user->assignRole($request->roles);
             } else {
-                $user->assignRole('user');
+                $user->assignRole('cliente');
             }
 
             return response()->json([
@@ -378,8 +378,8 @@ class AdminController extends Controller
         try {
             $currentUser = $request->user();
             
-            // Verificar que el usuario actual sea manager o administrador
-            if (!$currentUser->hasRole('manager') && !$currentUser->hasRole('administrador')) {
+            // Verificar que el usuario actual sea administrador
+            if (!$currentUser->hasRole('administrador')) {
                 return response()->json([
                     'message' => 'No tienes permisos para cambiar el estado de usuarios'
                 ], 403);

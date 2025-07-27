@@ -9,6 +9,7 @@ use App\Http\Controllers\MechanicProfileController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\ServiceRequestController;
 use App\Http\Controllers\LocationController;
+use App\Http\Controllers\Api\LocationController as ApiLocationController;
 use Illuminate\Support\Facades\Route;
 
 // Endpoint de salud (público)
@@ -80,6 +81,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware(['role:mecanico'])->group(function () {
         Route::get('/mechanics/profile', [MechanicProfileController::class, 'getMyProfile']);
         Route::post('/mechanics/profile', [MechanicProfileController::class, 'store']);
+        Route::put('/mechanics/profile', [MechanicProfileController::class, 'updateMyProfile']);
         Route::put('/mechanics/{mechanicProfile}', [MechanicProfileController::class, 'update']);
         Route::put('/mechanics/{mechanicProfile}/availability', [MechanicProfileController::class, 'updateAvailability']);
         Route::get('/mechanics/{mechanicProfile}/stats', [MechanicProfileController::class, 'getStats']);
@@ -115,17 +117,39 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware(['check.active'])->group(function () {
         Route::apiResource('service-requests', ServiceRequestController::class);
         Route::patch('/service-requests/{serviceRequest}/status', [ServiceRequestController::class, 'updateStatus']);
+        
+        // Rutas específicas para mecánicos con cálculo de distancias
+        Route::middleware(['role:mecanico'])->group(function () {
+            Route::get('/service-requests/{serviceRequest}/distance', [ServiceRequestController::class, 'calculateDistanceToService']);
+            Route::get('/service-requests/with-distance', [ServiceRequestController::class, 'getServicesWithDistance']);
+        });
     });
 
     // ==========================================
-    // GEOLOCALIZACIÓN
+    // GEOLOCALIZACIÓN Y DISTANCIAS
     // ==========================================
-    Route::put('/location', [LocationController::class, 'updateLocation']);
-    Route::get('/location', [LocationController::class, 'getCurrentLocation']);
-    Route::get('/location/nearby-users', [LocationController::class, 'findNearbyUsers']);
-    Route::post('/location/calculate-route', [LocationController::class, 'calculateRoute']);
-    Route::get('/location/search-addresses', [LocationController::class, 'searchAddresses']);
-    Route::get('/location/mechanic-service-area/{mechanic}', [LocationController::class, 'getMechanicServiceArea']);
+    Route::middleware(['check.active'])->group(function () {
+        // Rutas generales de geolocalización (existentes)
+        Route::put('/location', [LocationController::class, 'updateLocation']);
+        Route::get('/location', [LocationController::class, 'getCurrentLocation']);
+        Route::get('/location/nearby-users', [LocationController::class, 'findNearbyUsers']);
+        Route::post('/location/calculate-route', [LocationController::class, 'calculateRoute']);
+        Route::get('/location/search-addresses', [LocationController::class, 'searchAddresses']);
+        Route::get('/location/mechanic-service-area/{mechanic}', [LocationController::class, 'getMechanicServiceArea']);
+        
+        // Nuevas rutas específicas para mecánicos y cálculo de distancias
+        Route::middleware(['role:mecanico'])->group(function () {
+            Route::put('/mechanic/location', [ApiLocationController::class, 'updateMechanicLocation']);
+            Route::get('/mechanic/location', [ApiLocationController::class, 'getMechanicLocation']);
+            Route::get('/mechanic/services/nearby', [ApiLocationController::class, 'getNearbyServices']);
+            Route::get('/service-requests/{serviceRequest}/distance', [ApiLocationController::class, 'calculateDistanceToService']);
+        });
+        
+        // Rutas para clientes para encontrar mecánicos cercanos
+        Route::middleware(['role:cliente'])->group(function () {
+            Route::get('/mechanics/nearby', [ApiLocationController::class, 'getNearbyMechanics']);
+        });
+    });
 
     // ==========================================
     // ADMINISTRACIÓN AVANZADA (Solo Admin)

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { 
   LogOut, 
   User, 
@@ -10,7 +11,9 @@ import {
   Crown,
   Car,
   Wrench,
-  Settings
+  Settings,
+  Moon,
+  Sun
 } from 'lucide-react';
 
 interface NavigationHeaderProps {
@@ -27,6 +30,7 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({
   customBackPath 
 }) => {
   const { user, logout } = useAuth();
+  const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -73,28 +77,41 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({
   // Si no hay usuario y no se requieren botones especiales, usar header simple
   if (!user && !showBack && !showHome) {
     return (
-      <nav className="bg-white shadow-lg border-b border-gray-200">
+      <nav className="bg-white dark:bg-gray-900 shadow-lg border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <Link to="/" className="flex items-center space-x-2">
-              <div className="bg-blue-600 p-2 rounded-lg">
+              <div className="bg-blue-600 dark:bg-blue-500 p-2 rounded-lg">
                 <Wrench className="h-6 w-6 text-white" />
               </div>
-              <span className="text-xl font-bold text-gray-900">RuedaExpress</span>
+              <span className="text-xl font-bold text-gray-900 dark:text-white">RuedaExpress</span>
             </Link>
 
-            {/* Botones de auth */}
+            {/* Botones de auth y tema */}
             <div className="flex items-center space-x-2">
+              {/* Botón de cambio de tema */}
+              <button
+                onClick={toggleTheme}
+                className="p-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 dark:text-gray-400 dark:hover:text-blue-400 dark:hover:bg-blue-900/20 transition-colors"
+                title={isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
+              >
+                {isDark ? (
+                  <Sun className="h-5 w-5" />
+                ) : (
+                  <Moon className="h-5 w-5" />
+                )}
+              </button>
+              
               <Link
                 to="/login"
-                className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+                className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium"
               >
                 Iniciar Sesión
               </Link>
               <Link
                 to="/register"
-                className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
+                className="bg-blue-600 dark:bg-blue-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors"
               >
                 Registrarse
               </Link>
@@ -106,7 +123,7 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({
   }
 
   return (
-    <nav className="bg-white shadow-lg border-b border-gray-200">
+    <nav className="bg-white dark:bg-gray-900 shadow-lg border-b border-gray-200 dark:border-gray-700">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           
@@ -244,6 +261,19 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({
                     {user.name?.charAt(0).toUpperCase()}
                   </span>
                 </div>
+
+                {/* Botón de cambio de tema */}
+                <button
+                  onClick={toggleTheme}
+                  className="p-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 dark:text-gray-400 dark:hover:text-blue-400 dark:hover:bg-blue-900/20 transition-colors"
+                  title={isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
+                >
+                  {isDark ? (
+                    <Sun className="h-5 w-5" />
+                  ) : (
+                    <Moon className="h-5 w-5" />
+                  )}
+                </button>
 
                 {/* Botón de logout */}
                 <button

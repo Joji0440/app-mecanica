@@ -25,6 +25,8 @@ class ServiceRequest extends Model
         'preferred_date',
         'location_address',
         'location_notes',
+        'location_latitude',
+        'location_longitude',
         'status',
         'final_cost'
     ];
@@ -34,8 +36,41 @@ class ServiceRequest extends Model
         'estimated_duration_hours' => 'decimal:2',
         'budget_max' => 'decimal:2',
         'final_cost' => 'decimal:2',
-        'preferred_date' => 'date'
+        'preferred_date' => 'date',
+        'location_latitude' => 'decimal:8',
+        'location_longitude' => 'decimal:8',
     ];
+
+    // Eventos del modelo para debug
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Debug antes de crear
+        static::creating(function ($serviceRequest) {
+            \Illuminate\Support\Facades\Log::info('🎯 MODEL - ServiceRequest CREATING:', [
+                'coordinates_before_save' => [
+                    'latitude' => $serviceRequest->location_latitude,
+                    'longitude' => $serviceRequest->location_longitude,
+                    'latitude_type' => gettype($serviceRequest->location_latitude),
+                    'longitude_type' => gettype($serviceRequest->location_longitude),
+                ]
+            ]);
+        });
+
+        // Debug después de crear
+        static::created(function ($serviceRequest) {
+            \Illuminate\Support\Facades\Log::info('💾 MODEL - ServiceRequest CREATED:', [
+                'id' => $serviceRequest->id,
+                'coordinates_after_save' => [
+                    'latitude' => $serviceRequest->location_latitude,
+                    'longitude' => $serviceRequest->location_longitude,
+                    'coordinates_exist' => !is_null($serviceRequest->location_latitude) && !is_null($serviceRequest->location_longitude)
+                ],
+                'all_attributes' => $serviceRequest->attributesToArray()
+            ]);
+        });
+    }
 
     // Estados permitidos
     public const STATUS_PENDING = 'pending';
@@ -175,5 +210,79 @@ class ServiceRequest extends Model
             self::URGENCY_CRITICAL => 'Crítica',
             default => 'Normal'
         };
+    }
+
+    // ==========================================
+    // MÉTODOS DE UBICACIÓN
+    // ==========================================
+
+    /**
+     * Verificar si el servicio tiene coordenadas de ubicación
+     */
+    public function hasCoordinates(): bool
+    {
+        return !is_null($this->location_latitude) && !is_null($this->location_longitude);
+    }
+
+    /**
+     * Obtener las coordenadas del servicio
+     */
+    public function getCoordinates(): ?array
+    {
+        if (!$this->hasCoordinates()) {
+            return null;
+        }
+
+        return [
+            'latitude' => (float) $this->location_latitude,
+            'longitude' => (float) $this->location_longitude,
+        ];
+    }
+
+    /**
+     * Actualizar las coordenadas del servicio
+     */
+    public function updateCoordinates(float $latitude, float $longitude): bool
+    {
+        return $this->update([
+            'location_latitude' => $latitude,
+            'location_longitude' => $longitude,
+        ]);
+    }
+
+    /**
+     * Obtener información de distancia desde un mecánico específico
+     */
+    public function getDistanceFromMechanic(\App\Models\MechanicProfile $mechanic): ?array
+    {
+        if (!$this->hasCoordinates() || !$mechanic->hasLocation()) {
+            return null;
+        }
+
+        return $mechanic->getTravelInfo(
+            $this->location_latitude,
+            $this->location_longitude
+        );
+    }
+
+    /**
+     * Scope para servicios con coordenadas
+     */
+    public function scopeWithCoordinates($query)
+    {
+        return $query->whereNotNull('location_latitude')
+                    ->whereNotNull('location_longitude');
+    }
+
+    /**
+     * Scope para servicios cerca de una ubicación específica
+     */
+    public function scopeNearLocation($query, float $latitude, float $longitude, int $radiusKm = 10)
+    {
+        return $query->withCoordinates()
+                    ->whereRaw(
+                        "(6371 * acos(cos(radians(?)) * cos(radians(location_latitude)) * cos(radians(location_longitude) - radians(?)) + sin(radians(?)) * sin(radians(location_latitude)))) <= ?",
+                        [$latitude, $longitude, $latitude, $radiusKm]
+                    );
     }
 }

@@ -4,6 +4,7 @@ import type { ExtendedServiceRequest, ServiceRequestCreate, Vehicle } from '../.
 import NavigationHeader from '../../components/NavigationHeader';
 import ServiceDiagnosticWizard from '../../components/ServiceDiagnosticWizard';
 import LocationSelector from '../../components/shared/LocationSelector';
+import ChatBot from '../../components/ChatBot';
 import { 
   Calendar,
   Clock,
@@ -1161,6 +1162,9 @@ const ServiceManagement: React.FC = () => {
       )}
         </div>
       </div>
+
+      {/* Chatbot flotante */}
+      <ChatBot />
     </div>
   );
 };

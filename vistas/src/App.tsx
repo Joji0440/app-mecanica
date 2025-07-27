@@ -3,6 +3,7 @@ import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import RoleProtectedRoute from './components/RoleProtectedRoute';
+import ChatBot from './components/ChatBot';
 import Welcome from './pages/auth/Welcome';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
@@ -193,6 +194,9 @@ function App() {
             } 
           />
         </Routes>
+        
+        {/* ChatBot global - aparece en todas las páginas */}
+        <ChatBot />
       </Router>
     </AuthProvider>
     </ThemeProvider>

@@ -4,6 +4,7 @@ import { ThemeProvider } from './context/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import RoleProtectedRoute from './components/RoleProtectedRoute';
 import ChatBot from './components/ChatBot';
+import Footer from './components/Footer';
 import Welcome from './pages/auth/Welcome';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
@@ -17,7 +18,14 @@ import MechanicProfileComponent from './pages/mechanic/MechanicProfile';
 import VehicleManagement from './pages/client/VehicleManagement';
 import ServiceManagement from './pages/client/ServiceManagement';
 import MechanicSearch from './pages/client/MechanicSearch';
+import ClientProfile from './pages/client/ClientProfile';
 import AdminDashboard from './pages/admin/AdminDashboard';
+
+// Páginas adicionales
+import About from './pages/shared/About';
+import Contact from './pages/shared/Contact';
+import Terms from './pages/legal/Terms';
+import Privacy from './pages/legal/Privacy';
 
 function App() {
   return (
@@ -29,6 +37,14 @@ function App() {
           <Route path="/" element={<Welcome />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          
+          {/* Rutas de información pública */}
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/legal/terms" element={<Terms />} />
+          <Route path="/legal/privacy" element={<Privacy />} />
+          <Route path="/legal/cookies" element={<Privacy />} />
+          <Route path="/legal/disclaimer" element={<Terms />} />
           
           {/* Rutas protegidas generales */}
           <Route 
@@ -70,6 +86,14 @@ function App() {
             element={
               <RoleProtectedRoute allowedRoles={['cliente']}>
                 <MechanicSearch />
+              </RoleProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/client-profile" 
+            element={
+              <RoleProtectedRoute allowedRoles={['cliente']}>
+                <ClientProfile />
               </RoleProtectedRoute>
             } 
           />
@@ -197,6 +221,9 @@ function App() {
         
         {/* ChatBot global - aparece en todas las páginas */}
         <ChatBot />
+        
+        {/* Footer global - aparece en todas las páginas */}
+        <Footer />
       </Router>
     </AuthProvider>
     </ThemeProvider>

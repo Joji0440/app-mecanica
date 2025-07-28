@@ -3,8 +3,6 @@ import { mechanicAPI } from '../../services/api';
 import type { MechanicProfile as MechanicProfileType, CreateMechanicProfileRequest } from '../../types';
 import NavigationHeader from '../../components/NavigationHeader';
 import LocationSelector from '../../components/shared/LocationSelector';
-import useLocation from '../../hooks/useLocation';
-import { useGeolocation } from '../../hooks/useGeolocation';
 import { 
   User, 
   Star, 
@@ -18,10 +16,7 @@ import {
   AlertCircle,
   Loader,
   Plus,
-  X,
-  Navigation,
-  Target,
-  Crosshair
+  X
 } from 'lucide-react';
 
 const MechanicProfileComponent: React.FC = () => {
@@ -30,10 +25,6 @@ const MechanicProfileComponent: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-
-  // Location hooks
-  const geolocation = useGeolocation();
-  const location = useLocation();
 
   const [editData, setEditData] = useState<Partial<CreateMechanicProfileRequest>>({
     specializations: [],
@@ -155,23 +146,6 @@ const MechanicProfileComponent: React.FC = () => {
     }));
   };
 
-  const handleGetCurrentLocation = async () => {
-    try {
-      await geolocation.getCurrentPosition();
-      if (geolocation.latitude && geolocation.longitude) {
-        setEditData(prev => ({
-          ...prev,
-          latitude: geolocation.latitude || undefined,
-          longitude: geolocation.longitude || undefined,
-          address: geolocation.address || ''
-        }));
-        setSuccess('Ubicación obtenida correctamente');
-      }
-    } catch (err) {
-      setError('Error al obtener la ubicación');
-    }
-  };
-
   const handleAvailabilityToggle = async () => {
     if (!profile) return;
     
@@ -233,64 +207,66 @@ const MechanicProfileComponent: React.FC = () => {
   if (isLoading && !profile && !isEditing) {
     return (
       <div className="flex justify-center items-center h-64">
-        <Loader className="h-8 w-8 animate-spin text-indigo-600" />
-        <span className="ml-2 text-gray-600">Cargando perfil...</span>
+        <Loader className="h-8 w-8 animate-spin text-indigo-600 dark:text-indigo-400" />
+        <span className="ml-2 text-gray-600 dark:text-gray-300">Cargando perfil...</span>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="space-y-6">
       <NavigationHeader />
       
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Mi Perfil</h1>
-          <p className="text-gray-600">Gestiona tu información profesional</p>
-        </div>
-        
-        {profile && (
-          <div className="flex gap-2">
-            <button
-              onClick={handleAvailabilityToggle}
-              disabled={isLoading}
-              className={`px-4 py-2 rounded-lg font-medium disabled:opacity-50 ${
-                profile.is_available 
-                  ? 'bg-red-100 text-red-700 hover:bg-red-200' 
-                  : 'bg-green-100 text-green-700 hover:bg-green-200'
-              }`}
-            >
-              {profile.is_available ? 'Marcar No Disponible' : 'Marcar Disponible'}
-            </button>
-            
-            <button
-              onClick={() => setIsEditing(!isEditing)}
-              className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center gap-2"
-            >
-              <Edit className="h-4 w-4" />
-              {isEditing ? 'Cancelar' : 'Editar'}
-            </button>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Mi Perfil</h1>
+            <p className="text-gray-600 dark:text-gray-300">Gestiona tu información profesional</p>
           </div>
-        )}
-      </div>
+          
+          {profile && (
+            <div className="flex gap-2">
+              <button
+                onClick={handleAvailabilityToggle}
+                disabled={isLoading}
+                className={`px-4 py-2 rounded-lg font-medium disabled:opacity-50 ${
+                  profile.is_available 
+                    ? 'bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/30' 
+                    : 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-900/30'
+                }`}
+              >
+                {profile.is_available ? 'Marcar No Disponible' : 'Marcar Disponible'}
+              </button>
+              
+              <button
+                onClick={() => setIsEditing(!isEditing)}
+                className="bg-indigo-600 dark:bg-indigo-700 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-800 flex items-center gap-2"
+              >
+                <Edit className="h-4 w-4" />
+                {isEditing ? 'Cancelar' : 'Editar'}
+              </button>
+            </div>
+          )}
+        </div>
 
       {/* Messages */}
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg flex items-center">
           <AlertCircle className="h-5 w-5 mr-2" />
           {error}
-          <button onClick={() => setError('')} className="ml-auto">
+          <button onClick={() => setError('')} className="ml-auto text-red-700 dark:text-red-300 hover:text-red-900 dark:hover:text-red-100">
             <XCircle className="h-5 w-5" />
           </button>
         </div>
       )}
 
       {success && (
-        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex items-center">
+        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 px-4 py-3 rounded-lg flex items-center">
           <CheckCircle className="h-5 w-5 mr-2" />
           {success}
-          <button onClick={() => setSuccess('')} className="ml-auto">
+          <button onClick={() => setSuccess('')} className="ml-auto text-green-700 dark:text-green-300 hover:text-green-900 dark:hover:text-green-100">
             <XCircle className="h-5 w-5" />
           </button>
         </div>
@@ -300,17 +276,17 @@ const MechanicProfileComponent: React.FC = () => {
         /* Profile View */
         <div className="space-y-6">
           {/* Profile Header */}
-          <div className="bg-white rounded-lg shadow border p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center">
-                <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center">
-                  <User className="h-10 w-10 text-gray-500" />
+                <div className="w-20 h-20 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                  <User className="h-10 w-10 text-gray-500 dark:text-gray-400" />
                 </div>
                 <div className="ml-6">
-                  <h2 className="text-2xl font-bold text-gray-900">{profile.user?.name}</h2>
-                  <p className="text-gray-600">{profile.user?.email}</p>
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{profile.user?.name}</h2>
+                  <p className="text-gray-600 dark:text-gray-300">{profile.user?.email}</p>
                   {profile.user?.phone && (
-                    <p className="text-gray-600">{profile.user.phone}</p>
+                    <p className="text-gray-600 dark:text-gray-300">{profile.user.phone}</p>
                   )}
                 </div>
               </div>
@@ -318,13 +294,13 @@ const MechanicProfileComponent: React.FC = () => {
               <div className="text-right">
                 <div className="flex items-center justify-end mb-2">
                   <div className="flex">{getRatingStars(parseFloat(profile.rating_average))}</div>
-                  <span className="ml-2 font-medium">{profile.rating_average}</span>
+                  <span className="ml-2 font-medium text-gray-900 dark:text-white">{profile.rating_average}</span>
                 </div>
-                <p className="text-sm text-gray-600">{profile.total_reviews} reseñas</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">{profile.total_reviews} reseñas</p>
                 <div className={`mt-2 px-3 py-1 rounded-full text-sm font-medium ${
                   profile.is_available 
-                    ? 'bg-green-100 text-green-800' 
-                    : 'bg-red-100 text-red-800'
+                    ? 'bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300' 
+                    : 'bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-300'
                 }`}>
                   {profile.is_available ? '✅ Disponible' : '❌ No disponible'}
                 </div>
@@ -333,27 +309,27 @@ const MechanicProfileComponent: React.FC = () => {
 
             {profile.bio && (
               <div className="mb-6">
-                <h3 className="font-semibold text-gray-900 mb-2">Descripción</h3>
-                <p className="text-gray-700">{profile.bio}</p>
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Descripción</h3>
+                <p className="text-gray-700 dark:text-gray-300">{profile.bio}</p>
               </div>
             )}
 
             {/* Location Info */}
             {(profile.latitude && profile.longitude) && (
               <div className="mb-6">
-                <h3 className="font-semibold text-gray-900 mb-2">Ubicación de Servicio</h3>
-                <div className="bg-gray-50 rounded-lg p-4">
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Ubicación de Servicio</h3>
+                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
                   <div className="flex items-start">
-                    <MapPin className="h-5 w-5 text-gray-400 mr-3 mt-0.5" />
+                    <MapPin className="h-5 w-5 text-gray-400 dark:text-gray-500 mr-3 mt-0.5" />
                     <div>
                       {profile.address && (
-                        <p className="text-gray-700 mb-1">{profile.address}</p>
+                        <p className="text-gray-700 dark:text-gray-300 mb-1">{profile.address}</p>
                       )}
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
                         Coordenadas: {Number(profile.latitude).toFixed(4)}, {Number(profile.longitude).toFixed(4)}
                       </p>
                       {profile.location_updated_at && (
-                        <p className="text-xs text-gray-400 mt-1">
+                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
                           Actualizada: {new Date(profile.location_updated_at).toLocaleDateString()}
                         </p>
                       )}
@@ -367,74 +343,74 @@ const MechanicProfileComponent: React.FC = () => {
           {/* Professional Info */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Experience & Rates */}
-            <div className="bg-white rounded-lg shadow border p-6">
-              <h3 className="text-lg font-semibold mb-4">Información Profesional</h3>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Información Profesional</h3>
               
               <div className="space-y-4">
                 <div className="flex items-center">
-                  <Award className="h-5 w-5 text-gray-400 mr-3" />
+                  <Award className="h-5 w-5 text-gray-400 dark:text-gray-500 mr-3" />
                   <div>
-                    <div className="text-sm text-gray-600">Experiencia</div>
-                    <div className="font-medium">{profile.experience_years} años</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Experiencia</div>
+                    <div className="font-medium text-gray-900 dark:text-white">{profile.experience_years} años</div>
                   </div>
                 </div>
 
                 <div className="flex items-center">
-                  <DollarSign className="h-5 w-5 text-gray-400 mr-3" />
+                  <DollarSign className="h-5 w-5 text-gray-400 dark:text-gray-500 mr-3" />
                   <div>
-                    <div className="text-sm text-gray-600">Tarifa por hora</div>
-                    <div className="font-medium">${profile.hourly_rate}</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Tarifa por hora</div>
+                    <div className="font-medium text-gray-900 dark:text-white">${profile.hourly_rate}</div>
                   </div>
                 </div>
 
                 <div className="flex items-center">
-                  <MapPin className="h-5 w-5 text-gray-400 mr-3" />
+                  <MapPin className="h-5 w-5 text-gray-400 dark:text-gray-500 mr-3" />
                   <div>
-                    <div className="text-sm text-gray-600">Radio de viaje</div>
-                    <div className="font-medium">{profile.travel_radius} km</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Radio de viaje</div>
+                    <div className="font-medium text-gray-900 dark:text-white">{profile.travel_radius} km</div>
                   </div>
                 </div>
 
                 <div className="flex items-center">
-                  <CheckCircle className="h-5 w-5 text-gray-400 mr-3" />
+                  <CheckCircle className="h-5 w-5 text-gray-400 dark:text-gray-500 mr-3" />
                   <div>
-                    <div className="text-sm text-gray-600">Trabajos completados</div>
-                    <div className="font-medium">{profile.total_jobs}</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Trabajos completados</div>
+                    <div className="font-medium text-gray-900 dark:text-white">{profile.total_jobs}</div>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Availability */}
-            <div className="bg-white rounded-lg shadow border p-6">
-              <h3 className="text-lg font-semibold mb-4">Disponibilidad</h3>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Disponibilidad</h3>
               
               <div className="space-y-3">
                 {profile.emergency_available && (
                   <div className="flex items-center">
                     <div className="w-2 h-2 bg-red-500 rounded-full mr-3"></div>
-                    <span className="text-sm">Disponible para emergencias 24/7</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Disponible para emergencias 24/7</span>
                   </div>
                 )}
 
                 {profile.accepts_weekend_jobs && (
                   <div className="flex items-center">
                     <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
-                    <span className="text-sm">Acepta trabajos de fin de semana</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Acepta trabajos de fin de semana</span>
                   </div>
                 )}
 
                 {profile.accepts_night_jobs && (
                   <div className="flex items-center">
                     <div className="w-2 h-2 bg-purple-500 rounded-full mr-3"></div>
-                    <span className="text-sm">Acepta trabajos nocturnos</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Acepta trabajos nocturnos</span>
                   </div>
                 )}
 
                 {profile.is_verified && (
                   <div className="flex items-center">
                     <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
-                    <span className="text-sm">Perfil verificado</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Perfil verificado</span>
                   </div>
                 )}
               </div>
@@ -442,13 +418,13 @@ const MechanicProfileComponent: React.FC = () => {
           </div>
 
           {/* Specializations */}
-          <div className="bg-white rounded-lg shadow border p-6">
-            <h3 className="text-lg font-semibold mb-4">Especialidades</h3>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Especialidades</h3>
             <div className="flex flex-wrap gap-2">
               {profile.specializations.map((spec, index) => (
                 <span 
                   key={index} 
-                  className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm"
+                  className="bg-indigo-100 dark:bg-indigo-900/20 text-indigo-800 dark:text-indigo-300 px-3 py-1 rounded-full text-sm"
                 >
                   {specialtyOptions.find(s => s.value === spec)?.label || spec}
                 </span>
@@ -458,13 +434,13 @@ const MechanicProfileComponent: React.FC = () => {
 
           {/* Certifications */}
           {profile.certifications.length > 0 && (
-            <div className="bg-white rounded-lg shadow border p-6">
-              <h3 className="text-lg font-semibold mb-4">Certificaciones</h3>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Certificaciones</h3>
               <div className="flex flex-wrap gap-2">
                 {profile.certifications.map((cert, index) => (
                   <span 
                     key={index} 
-                    className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm"
+                    className="bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300 px-3 py-1 rounded-full text-sm"
                   >
                     {cert}
                   </span>
@@ -475,8 +451,8 @@ const MechanicProfileComponent: React.FC = () => {
         </div>
       ) : (
         /* Edit Form */
-        <div className="bg-white rounded-lg shadow border p-6">
-          <h2 className="text-xl font-semibold mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-6">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
             {profile ? 'Editar Perfil' : 'Crear Perfil de Mecánico'}
           </h2>
 
@@ -484,7 +460,7 @@ const MechanicProfileComponent: React.FC = () => {
             {/* Basic Info */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Años de experiencia *
                 </label>
                 <input
@@ -493,12 +469,12 @@ const MechanicProfileComponent: React.FC = () => {
                   onChange={(e) => setEditData(prev => ({ ...prev, experience_years: parseInt(e.target.value) }))}
                   min="0"
                   max="50"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500"
+                  className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Tarifa por hora ($) *
                 </label>
                 <input
@@ -507,12 +483,12 @@ const MechanicProfileComponent: React.FC = () => {
                   onChange={(e) => setEditData(prev => ({ ...prev, hourly_rate: parseFloat(e.target.value) }))}
                   min="0"
                   step="0.01"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500"
+                  className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Radio de viaje (km)
                 </label>
                 <input
@@ -521,21 +497,21 @@ const MechanicProfileComponent: React.FC = () => {
                   onChange={(e) => setEditData(prev => ({ ...prev, travel_radius: parseInt(e.target.value) }))}
                   min="1"
                   max="100"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500"
+                  className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400"
                 />
               </div>
             </div>
 
             {/* Bio */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Descripción profesional
               </label>
               <textarea
                 value={editData.bio || ''}
                 onChange={(e) => setEditData(prev => ({ ...prev, bio: e.target.value }))}
                 rows={3}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500"
+                className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400"
                 placeholder="Cuéntanos sobre tu experiencia y especialidades..."
               />
             </div>
@@ -551,14 +527,14 @@ const MechanicProfileComponent: React.FC = () => {
 
             {/* Specializations */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Especialidades *
               </label>
               <div className="flex gap-2 mb-2">
                 <select
                   value={newSpecialization}
                   onChange={(e) => setNewSpecialization(e.target.value)}
-                  className="flex-1 border border-gray-300 rounded-lg px-3 py-2"
+                  className="flex-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400"
                 >
                   <option value="">Seleccionar especialidad</option>
                   {specialtyOptions.map(option => (
@@ -570,7 +546,7 @@ const MechanicProfileComponent: React.FC = () => {
                 <button
                   type="button"
                   onClick={addSpecialization}
-                  className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700"
+                  className="bg-indigo-600 dark:bg-indigo-700 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-800"
                 >
                   <Plus className="h-4 w-4" />
                 </button>
@@ -579,13 +555,13 @@ const MechanicProfileComponent: React.FC = () => {
                 {editData.specializations?.map((spec, index) => (
                   <span 
                     key={index} 
-                    className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm flex items-center gap-1"
+                    className="bg-indigo-100 dark:bg-indigo-900/20 text-indigo-800 dark:text-indigo-300 px-3 py-1 rounded-full text-sm flex items-center gap-1"
                   >
                     {specialtyOptions.find(s => s.value === spec)?.label || spec}
                     <button
                       type="button"
                       onClick={() => removeSpecialization(spec)}
-                      className="text-indigo-600 hover:text-indigo-800"
+                      className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-200"
                     >
                       <X className="h-3 w-3" />
                     </button>
@@ -596,7 +572,7 @@ const MechanicProfileComponent: React.FC = () => {
 
             {/* Certifications */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Certificaciones
               </label>
               <div className="flex gap-2 mb-2">
@@ -605,13 +581,13 @@ const MechanicProfileComponent: React.FC = () => {
                   value={newCertification}
                   onChange={(e) => setNewCertification(e.target.value)}
                   placeholder="Nombre de la certificación"
-                  className="flex-1 border border-gray-300 rounded-lg px-3 py-2"
+                  className="flex-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400"
                   onKeyPress={(e) => e.key === 'Enter' && addCertification()}
                 />
                 <button
                   type="button"
                   onClick={addCertification}
-                  className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+                  className="bg-green-600 dark:bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-700 dark:hover:bg-green-800"
                 >
                   <Plus className="h-4 w-4" />
                 </button>
@@ -620,13 +596,13 @@ const MechanicProfileComponent: React.FC = () => {
                 {editData.certifications?.map((cert, index) => (
                   <span 
                     key={index} 
-                    className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm flex items-center gap-1"
+                    className="bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300 px-3 py-1 rounded-full text-sm flex items-center gap-1"
                   >
                     {cert}
                     <button
                       type="button"
                       onClick={() => removeCertification(cert)}
-                      className="text-green-600 hover:text-green-800"
+                      className="text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-200"
                     >
                       <X className="h-3 w-3" />
                     </button>
@@ -637,7 +613,7 @@ const MechanicProfileComponent: React.FC = () => {
 
             {/* Availability Options */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                 Disponibilidad
               </label>
               <div className="space-y-2">
@@ -646,9 +622,9 @@ const MechanicProfileComponent: React.FC = () => {
                     type="checkbox"
                     checked={editData.emergency_available || false}
                     onChange={(e) => setEditData(prev => ({ ...prev, emergency_available: e.target.checked }))}
-                    className="mr-2 h-4 w-4 text-indigo-600"
+                    className="mr-2 h-4 w-4 text-indigo-600 bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-indigo-500 dark:focus:ring-indigo-600"
                   />
-                  <span className="text-sm">Disponible para emergencias 24/7</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">Disponible para emergencias 24/7</span>
                 </label>
 
                 <label className="flex items-center">
@@ -656,9 +632,9 @@ const MechanicProfileComponent: React.FC = () => {
                     type="checkbox"
                     checked={editData.accepts_weekend_jobs || false}
                     onChange={(e) => setEditData(prev => ({ ...prev, accepts_weekend_jobs: e.target.checked }))}
-                    className="mr-2 h-4 w-4 text-indigo-600"
+                    className="mr-2 h-4 w-4 text-indigo-600 bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-indigo-500 dark:focus:ring-indigo-600"
                   />
-                  <span className="text-sm">Acepto trabajos de fin de semana</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">Acepto trabajos de fin de semana</span>
                 </label>
 
                 <label className="flex items-center">
@@ -666,20 +642,20 @@ const MechanicProfileComponent: React.FC = () => {
                     type="checkbox"
                     checked={editData.accepts_night_jobs || false}
                     onChange={(e) => setEditData(prev => ({ ...prev, accepts_night_jobs: e.target.checked }))}
-                    className="mr-2 h-4 w-4 text-indigo-600"
+                    className="mr-2 h-4 w-4 text-indigo-600 bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-indigo-500 dark:focus:ring-indigo-600"
                   />
-                  <span className="text-sm">Acepto trabajos nocturnos</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">Acepto trabajos nocturnos</span>
                 </label>
               </div>
             </div>
 
             {/* Action Buttons */}
-            <div className="flex justify-end gap-2 pt-6 border-t">
+            <div className="flex justify-end gap-2 pt-6 border-t border-gray-200 dark:border-gray-700">
               {profile && (
                 <button
                   type="button"
                   onClick={() => setIsEditing(false)}
-                  className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  className="px-4 py-2 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600"
                 >
                   Cancelar
                 </button>
@@ -687,7 +663,7 @@ const MechanicProfileComponent: React.FC = () => {
               <button
                 onClick={handleSave}
                 disabled={isLoading}
-                className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 flex items-center gap-2"
+                className="px-6 py-2 bg-indigo-600 dark:bg-indigo-700 text-white rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-800 disabled:opacity-50 flex items-center gap-2"
               >
                 <Save className="h-4 w-4" />
                 {isLoading ? 'Guardando...' : (profile ? 'Actualizar' : 'Crear Perfil')}
@@ -696,6 +672,8 @@ const MechanicProfileComponent: React.FC = () => {
           </div>
         </div>
       )}
+      </div>
+    </div>
     </div>
   );
 };

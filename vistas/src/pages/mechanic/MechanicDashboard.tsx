@@ -301,32 +301,32 @@ const MechanicDashboard: React.FC = () => {
   };
 
   const statusLabels: Record<string, { label: string; color: string; bg: string }> = {
-    pending: { label: 'Pendiente', color: 'text-yellow-800', bg: 'bg-yellow-100' },
-    accepted: { label: 'Aceptado', color: 'text-blue-800', bg: 'bg-blue-100' },
-    in_progress: { label: 'En Progreso', color: 'text-indigo-800', bg: 'bg-indigo-100' },
-    completed: { label: 'Completado', color: 'text-green-800', bg: 'bg-green-100' },
-    cancelled: { label: 'Cancelado', color: 'text-red-800', bg: 'bg-red-100' },
-    rejected: { label: 'Rechazado', color: 'text-gray-800', bg: 'bg-gray-100' }
+    pending: { label: 'Pendiente', color: 'text-yellow-800 dark:text-yellow-200', bg: 'bg-yellow-100 dark:bg-yellow-900/20' },
+    accepted: { label: 'Aceptado', color: 'text-blue-800 dark:text-blue-200', bg: 'bg-blue-100 dark:bg-blue-900/20' },
+    in_progress: { label: 'En Progreso', color: 'text-indigo-800 dark:text-indigo-200', bg: 'bg-indigo-100 dark:bg-indigo-900/20' },
+    completed: { label: 'Completado', color: 'text-green-800 dark:text-green-200', bg: 'bg-green-100 dark:bg-green-900/20' },
+    cancelled: { label: 'Cancelado', color: 'text-red-800 dark:text-red-200', bg: 'bg-red-100 dark:bg-red-900/20' },
+    rejected: { label: 'Rechazado', color: 'text-gray-800 dark:text-gray-200', bg: 'bg-gray-100 dark:bg-gray-800' }
   };
 
   const urgencyLevels = [
-    { value: 'baja', label: 'Baja', color: 'text-green-600' },
-    { value: 'media', label: 'Media', color: 'text-yellow-600' },
-    { value: 'alta', label: 'Alta', color: 'text-orange-600' },
-    { value: 'critica', label: 'Crítica', color: 'text-red-600' }
+    { value: 'baja', label: 'Baja', color: 'text-green-600 dark:text-green-400' },
+    { value: 'media', label: 'Media', color: 'text-yellow-600 dark:text-yellow-400' },
+    { value: 'alta', label: 'Alta', color: 'text-orange-600 dark:text-orange-400' },
+    { value: 'critica', label: 'Crítica', color: 'text-red-600 dark:text-red-400' }
   ];
 
   if (isLoading && !profile) {
     return (
       <div className="flex justify-center items-center h-64">
-        <Loader className="h-8 w-8 animate-spin text-indigo-600" />
-        <span className="ml-2 text-gray-600">Cargando dashboard...</span>
+        <Loader className="h-8 w-8 animate-spin text-indigo-600 dark:text-indigo-400" />
+        <span className="ml-2 text-gray-600 dark:text-gray-300">Cargando dashboard...</span>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <NavigationHeader title="Dashboard Mecánico" showBack={true} customBackPath="/" />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -334,8 +334,8 @@ const MechanicDashboard: React.FC = () => {
           {/* Header */}
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Panel Mecánico</h1>
-              <p className="text-gray-600">
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Panel Mecánico</h1>
+              <p className="text-gray-600 dark:text-gray-300">
                 Bienvenido de vuelta, {profile?.user?.name}
               </p>
             </div>
@@ -343,7 +343,7 @@ const MechanicDashboard: React.FC = () => {
         {profile && (
           <div className="flex items-center space-x-2">
             <div className="flex">{getRatingStars(parseFloat(profile.rating_average))}</div>
-            <span className="text-sm text-gray-600">
+            <span className="text-sm text-gray-600 dark:text-gray-400">
               {profile.rating_average} ({profile.total_reviews} reseñas)
             </span>
           </div>
@@ -352,7 +352,7 @@ const MechanicDashboard: React.FC = () => {
 
       {/* Error Message */}
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg flex items-center">
           <AlertCircle className="h-5 w-5 mr-2" />
           {error}
           <button onClick={() => setError('')} className="ml-auto">
@@ -363,50 +363,55 @@ const MechanicDashboard: React.FC = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow border">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow border border-gray-200 dark:border-gray-700">
           <div className="flex items-center">
-            <div className="p-2 bg-yellow-100 rounded-lg">
-              <Clock className="h-6 w-6 text-yellow-600" />
+            <div className="p-2 bg-yellow-100 dark:bg-yellow-900/20 rounded-lg">
+              <Clock className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
             </div>
             <div className="ml-4">
-              <p className="text-sm text-gray-600">Solicitudes Disponibles</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.pending_requests}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Solicitudes Disponibles</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.pending_requests}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow border">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow border border-gray-200 dark:border-gray-700">
           <div className="flex items-center">
-            <div className="p-2 bg-indigo-100 rounded-lg">
-              <Wrench className="h-6 w-6 text-indigo-600" />
+            <div className="p-2 bg-indigo-100 dark:bg-indigo-900/20 rounded-lg">
+              <Wrench className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
             </div>
             <div className="ml-4">
-              <p className="text-sm text-gray-600">Servicios Activos</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.active_services}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Servicios Activos</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.active_services}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow border">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow border border-gray-200 dark:border-gray-700">
           <div className="flex items-center">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <CheckCircle className="h-6 w-6 text-green-600" />
+            <div className="p-2 bg-green-100 dark:bg-green-900/20 rounded-lg">
+              <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
             </div>
             <div className="ml-4">
-              <p className="text-sm text-gray-600">Completados</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.completed_services}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Completados</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.completed_services}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow border">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow border border-gray-200 dark:border-gray-700">
           <div className="flex items-center">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <DollarSign className="h-6 w-6 text-green-600" />
+            <div className="p-2 bg-green-100 dark:bg-green-900/20 rounded-lg">
+              <DollarSign className="h-6 w-6 text-green-600 dark:text-green-400" />
             </div>
             <div className="ml-4">
-              <p className="text-sm text-gray-600">Ingresos Totales</p>
-              <p className="text-2xl font-bold text-gray-900">${stats.total_earnings}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Ingresos Totales</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                ${Number(stats.total_earnings || 0).toLocaleString('es-ES', { 
+                  minimumFractionDigits: 2, 
+                  maximumFractionDigits: 2 
+                })}
+              </p>
             </div>
           </div>
         </div>
@@ -415,19 +420,19 @@ const MechanicDashboard: React.FC = () => {
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Pending Requests */}
-        <div className="bg-white rounded-lg shadow border">
-          <div className="p-6 border-b">
-            <h2 className="text-lg font-semibold flex items-center">
-              <Clock className="h-5 w-5 mr-2 text-yellow-600" />
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+          <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+              <Clock className="h-5 w-5 mr-2 text-yellow-600 dark:text-yellow-400" />
               Solicitudes Disponibles
               {pendingRequests.length > 0 && (
-                <span className="ml-2 bg-yellow-100 text-yellow-800 text-xs font-medium px-2 py-1 rounded-full">
+                <span className="ml-2 bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-300 text-xs font-medium px-2 py-1 rounded-full">
                   {pendingRequests.length}
                 </span>
               )}
             </h2>
             {pendingRequests.length > 2 && (
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 Mostrando 2 de {pendingRequests.length} solicitudes. Desplázate para ver más.
               </p>
             )}
@@ -435,34 +440,34 @@ const MechanicDashboard: React.FC = () => {
           
           {/* Contenedor con scroll limitado a 2 servicios */}
           <div className="max-h-96 overflow-y-auto">
-            <div className="divide-y">
+            <div className="divide-y divide-gray-200 dark:divide-gray-700">
               {pendingRequests.length > 0 ? (
                 pendingRequests.map((request) => (
                   <div key={request.id} className="p-4">
                     <div className="flex justify-between items-start mb-2">
-                      <h3 className="font-medium text-gray-900">{request.title}</h3>
+                      <h3 className="font-medium text-gray-900 dark:text-white">{request.title}</h3>
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${urgencyLevels.find(u => u.value === request.urgency_level)?.color}`}>
                         {urgencyLevels.find(u => u.value === request.urgency_level)?.label}
                       </span>
                     </div>
                     
-                    <p className="text-sm text-gray-600 mb-2 line-clamp-2">{request.description}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">{request.description}</p>
                     
                     {/* Información del Vehículo */}
                     {request.vehicle && (
-                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-2 mb-3">
-                        <div className="flex items-center text-xs text-blue-800">
+                      <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-lg p-2 mb-3">
+                        <div className="flex items-center text-xs text-blue-800 dark:text-blue-300">
                           <Car className="h-3 w-3 mr-1" />
                           <span className="font-medium">
                             {request.vehicle.make} {request.vehicle.model} {request.vehicle.year}
                           </span>
                           {request.vehicle.license_plate && (
-                            <span className="ml-2 font-mono bg-blue-100 px-1 rounded">
+                            <span className="ml-2 font-mono bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-200 px-1 rounded">
                               {request.vehicle.license_plate}
                             </span>
                           )}
                         </div>
-                        <div className="flex items-center text-xs text-blue-600 mt-1 space-x-2">
+                        <div className="flex items-center text-xs text-blue-600 dark:text-blue-400 mt-1 space-x-2">
                           <span>⚙️ {request.vehicle.transmission_type}</span>
                           <span>⛽ {request.vehicle.fuel_type}</span>
                           {request.vehicle.mileage && (
@@ -474,12 +479,12 @@ const MechanicDashboard: React.FC = () => {
 
                     {/* Información de Distancia */}
                     {mechanicLocation && request.location_address && (
-                      <div className="bg-green-50 border border-green-200 rounded-lg p-2 mb-3">
-                        <div className="flex items-center text-xs text-green-800">
+                      <div className="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700 rounded-lg p-2 mb-3">
+                        <div className="flex items-center text-xs text-green-800 dark:text-green-300">
                           <Navigation className="h-3 w-3 mr-1" />
                           <span className="font-medium">Ubicación del servicio</span>
                         </div>
-                        <div className="text-xs text-green-600 mt-1">
+                        <div className="text-xs text-green-600 dark:text-green-400 mt-1">
                           <div className="flex items-center">
                             <MapPin className="h-3 w-3 mr-1" />
                             <span className="truncate">{request.location_address}</span>
@@ -488,14 +493,14 @@ const MechanicDashboard: React.FC = () => {
                             <span className="flex items-center">
                               <Target className="h-3 w-3 mr-1" />
                               {serviceDistances[request.id] ? (
-                                <span className="font-medium text-green-700">
+                                <span className="font-medium text-green-700 dark:text-green-300">
                                   Distancia: {serviceDistances[request.id].toFixed(1)} km
                                 </span>
                               ) : (
                                 'Calculando distancia...'
                               )}
                             </span>
-                            <span className="text-xs text-gray-500">
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
                               Radio: {mechanicLocation.travel_radius_km || 10} km
                             </span>
                           </div>
@@ -503,7 +508,7 @@ const MechanicDashboard: React.FC = () => {
                       </div>
                     )}
                     
-                    <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
+                    <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-3">
                       <span className="flex items-center">
                         <User className="h-3 w-3 mr-1" />
                         {request.client?.name}
@@ -526,7 +531,7 @@ const MechanicDashboard: React.FC = () => {
                           setSelectedRequest(request);
                           setShowDetailModal(true);
                         }}
-                        className="flex-1 bg-gray-100 text-gray-700 px-3 py-1 rounded text-xs hover:bg-gray-200 flex items-center justify-center gap-1"
+                        className="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-1 rounded text-xs hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center justify-center gap-1"
                       >
                         <Eye className="h-3 w-3" />
                         Ver
@@ -536,14 +541,14 @@ const MechanicDashboard: React.FC = () => {
                         <>
                           <button
                             onClick={() => handleAcceptRequest(Number(request.id))}
-                            className="bg-green-600 text-white px-3 py-1 rounded text-xs hover:bg-green-700 flex items-center gap-1"
+                            className="bg-green-600 dark:bg-green-700 text-white px-3 py-1 rounded text-xs hover:bg-green-700 dark:hover:bg-green-800 flex items-center gap-1"
                           >
                             <CheckSquare className="h-3 w-3" />
                             Aceptar
                           </button>
                           <button
                             onClick={() => handleRejectRequest(Number(request.id))}
-                            className="bg-red-600 text-white px-3 py-1 rounded text-xs hover:bg-red-700"
+                            className="bg-red-600 dark:bg-red-700 text-white px-3 py-1 rounded text-xs hover:bg-red-700 dark:hover:bg-red-800"
                           >
                             <X className="h-3 w-3" />
                           </button>
@@ -553,7 +558,7 @@ const MechanicDashboard: React.FC = () => {
                       {request.status === 'accepted' && (
                         <button
                           onClick={() => handleStartService(Number(request.id))}
-                          className="bg-indigo-600 text-white px-3 py-1 rounded text-xs hover:bg-indigo-700"
+                          className="bg-indigo-600 dark:bg-indigo-700 text-white px-3 py-1 rounded text-xs hover:bg-indigo-700 dark:hover:bg-indigo-800"
                         >
                           Iniciar
                         </button>
@@ -562,8 +567,8 @@ const MechanicDashboard: React.FC = () => {
                   </div>
                 ))
               ) : (
-                <div className="p-8 text-center text-gray-500">
-                  <Clock className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                <div className="p-8 text-center text-gray-500 dark:text-gray-400">
+                  <Clock className="h-8 w-8 mx-auto mb-2 text-gray-400 dark:text-gray-500" />
                   <p>No hay solicitudes disponibles</p>
                   <p className="text-xs mt-1">Solo se muestran solicitudes de las últimas 5 horas</p>
                 </div>
@@ -573,46 +578,46 @@ const MechanicDashboard: React.FC = () => {
         </div>
 
         {/* Active Services */}
-        <div className="bg-white rounded-lg shadow border">
-          <div className="p-6 border-b">
-            <h2 className="text-lg font-semibold flex items-center">
-              <Wrench className="h-5 w-5 mr-2 text-indigo-600" />
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+          <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+              <Wrench className="h-5 w-5 mr-2 text-indigo-600 dark:text-indigo-400" />
               Servicios Activos
             </h2>
           </div>
           
-          <div className="divide-y">
+          <div className="divide-y divide-gray-200 dark:divide-gray-700">
             {activeServices.length > 0 ? (
               activeServices.map((service) => (
                 <div key={service.id} className="p-4">
                   <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-medium text-gray-900">{service.title}</h3>
+                    <h3 className="font-medium text-gray-900 dark:text-white">{service.title}</h3>
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                       service.status === 'accepted' 
-                        ? 'bg-blue-100 text-blue-800' 
-                        : 'bg-indigo-100 text-indigo-800'
+                        ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300' 
+                        : 'bg-indigo-100 dark:bg-indigo-900/20 text-indigo-800 dark:text-indigo-300'
                     }`}>
                       {service.status === 'accepted' ? 'Aceptado' : 'En Progreso'}
                     </span>
                   </div>
                   
-                  <p className="text-sm text-gray-600 mb-2 line-clamp-2">{service.description}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">{service.description}</p>
                   
                   {/* Información del Vehículo */}
                   {service.vehicle && (
-                    <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-2 mb-3">
-                      <div className="flex items-center text-xs text-indigo-800">
+                    <div className="bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-700 rounded-lg p-2 mb-3">
+                      <div className="flex items-center text-xs text-indigo-800 dark:text-indigo-300">
                         <Car className="h-3 w-3 mr-1" />
                         <span className="font-medium">
                           {service.vehicle.make} {service.vehicle.model} {service.vehicle.year}
                         </span>
                         {service.vehicle.license_plate && (
-                          <span className="ml-2 font-mono bg-indigo-100 px-1 rounded">
+                          <span className="ml-2 font-mono bg-indigo-100 dark:bg-indigo-800 text-indigo-800 dark:text-indigo-200 px-1 rounded">
                             {service.vehicle.license_plate}
                           </span>
                         )}
                       </div>
-                      <div className="flex items-center text-xs text-indigo-600 mt-1 space-x-2">
+                      <div className="flex items-center text-xs text-indigo-600 dark:text-indigo-400 mt-1 space-x-2">
                         <span>⚙️ {service.vehicle.transmission_type}</span>
                         <span>⛽ {service.vehicle.fuel_type}</span>
                         {service.vehicle.mileage && (
@@ -622,7 +627,7 @@ const MechanicDashboard: React.FC = () => {
                     </div>
                   )}
                   
-                  <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
+                  <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-3">
                     <span className="flex items-center">
                       <User className="h-3 w-3 mr-1" />
                       {service.client?.name}
@@ -639,7 +644,7 @@ const MechanicDashboard: React.FC = () => {
                         setSelectedRequest(service);
                         setShowDetailModal(true);
                       }}
-                      className="flex-1 bg-gray-100 text-gray-700 px-3 py-1 rounded text-xs hover:bg-gray-200 flex items-center justify-center gap-1"
+                      className="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-1 rounded text-xs hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center justify-center gap-1"
                     >
                       <Eye className="h-3 w-3" />
                       Ver Detalles
@@ -648,7 +653,7 @@ const MechanicDashboard: React.FC = () => {
                     {service.status === 'accepted' && (
                       <button
                         onClick={() => handleStartService(Number(service.id))}
-                        className="bg-indigo-600 text-white px-3 py-1 rounded text-xs hover:bg-indigo-700 flex items-center gap-1"
+                        className="bg-indigo-600 dark:bg-indigo-700 text-white px-3 py-1 rounded text-xs hover:bg-indigo-700 dark:hover:bg-indigo-800 flex items-center gap-1"
                       >
                         <Wrench className="h-3 w-3" />
                         Iniciar
@@ -658,7 +663,7 @@ const MechanicDashboard: React.FC = () => {
                     {service.status === 'in_progress' && (
                       <button
                         onClick={() => handleCompleteService(Number(service.id))}
-                        className="bg-green-600 text-white px-3 py-1 rounded text-xs hover:bg-green-700 flex items-center gap-1"
+                        className="bg-green-600 dark:bg-green-700 text-white px-3 py-1 rounded text-xs hover:bg-green-700 dark:hover:bg-green-800 flex items-center gap-1"
                       >
                         <CheckCircle className="h-3 w-3" />
                         Completar
@@ -668,8 +673,8 @@ const MechanicDashboard: React.FC = () => {
                 </div>
               ))
             ) : (
-              <div className="p-8 text-center text-gray-500">
-                <Wrench className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+              <div className="p-8 text-center text-gray-500 dark:text-gray-400">
+                <Wrench className="h-8 w-8 mx-auto mb-2 text-gray-400 dark:text-gray-500" />
                 <p>No hay servicios activos</p>
               </div>
             )}
@@ -678,53 +683,53 @@ const MechanicDashboard: React.FC = () => {
       </div>
 
       {/* Recent Services */}
-      <div className="bg-white rounded-lg shadow border">
-        <div className="p-6 border-b">
-          <h2 className="text-lg font-semibold flex items-center">
-            <CheckCircle className="h-5 w-5 mr-2 text-green-600" />
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+            <CheckCircle className="h-5 w-5 mr-2 text-green-600 dark:text-green-400" />
             Servicios Recientes Completados
           </h2>
         </div>
         
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Servicio</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duración</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Costo</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Servicio</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Cliente</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Fecha</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Duración</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Costo</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {recentServices.length > 0 ? (
                 recentServices.map((service) => (
                   <tr key={service.id}>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>
-                        <div className="text-sm font-medium text-gray-900">{service.title}</div>
-                        <div className="text-sm text-gray-500">{service.service_type}</div>
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">{service.title}</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">{service.service_type}</div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                       {service.client?.name}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                       {formatDate(service.updated_at)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                       {service.estimated_duration_hours}h
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                       ${service.final_cost || service.budget_max || '-'}
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
-                    <CheckCircle className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                    <CheckCircle className="h-8 w-8 mx-auto mb-2 text-gray-400 dark:text-gray-500" />
                     <p>No hay servicios completados recientes</p>
                   </td>
                 </tr>
@@ -737,13 +742,13 @@ const MechanicDashboard: React.FC = () => {
       {/* Service Detail Modal */}
       {showDetailModal && selectedRequest && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-semibold">Detalle de la Solicitud</h2>
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Detalle de la Solicitud</h2>
                 <button
                   onClick={() => setShowDetailModal(false)}
-                  className="text-gray-500 hover:text-gray-700"
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                 >
                   <XCircle className="h-6 w-6" />
                 </button>
@@ -753,45 +758,45 @@ const MechanicDashboard: React.FC = () => {
                 {/* Request Header */}
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-2xl font-bold text-gray-900">{selectedRequest.title}</h3>
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white">{selectedRequest.title}</h3>
                     <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusLabels[selectedRequest.status]?.bg} ${statusLabels[selectedRequest.status]?.color}`}>
                       {statusLabels[selectedRequest.status]?.label}
                     </span>
                   </div>
-                  <p className="text-gray-600">{selectedRequest.description}</p>
+                  <p className="text-gray-600 dark:text-gray-300">{selectedRequest.description}</p>
                 </div>
 
                 {/* Request Details Grid - 3 columnas */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   {/* Información del Cliente */}
                   <div className="space-y-4">
-                    <h4 className="font-semibold text-gray-900">Información del Cliente</h4>
+                    <h4 className="font-semibold text-gray-900 dark:text-white">Información del Cliente</h4>
                     
                     <div className="flex items-center">
-                      <User className="h-5 w-5 text-gray-400 mr-3" />
+                      <User className="h-5 w-5 text-gray-400 dark:text-gray-500 mr-3" />
                       <div>
-                        <div className="text-sm text-gray-600">Cliente</div>
-                        <div className="font-medium">{selectedRequest.client?.name}</div>
-                        <div className="text-sm text-gray-500">{selectedRequest.client?.email}</div>
+                        <div className="text-sm text-gray-600 dark:text-gray-400">Cliente</div>
+                        <div className="font-medium text-gray-900 dark:text-white">{selectedRequest.client?.name}</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">{selectedRequest.client?.email}</div>
                       </div>
                     </div>
 
                     {selectedRequest.location_address && (
                       <div className="flex items-start">
-                        <MapPin className="h-5 w-5 text-gray-400 mr-3 mt-0.5" />
+                        <MapPin className="h-5 w-5 text-gray-400 dark:text-gray-500 mr-3 mt-0.5" />
                         <div>
-                          <div className="text-sm text-gray-600">Ubicación</div>
-                          <div className="font-medium">{selectedRequest.location_address}</div>
+                          <div className="text-sm text-gray-600 dark:text-gray-400">Ubicación</div>
+                          <div className="font-medium text-gray-900 dark:text-white">{selectedRequest.location_address}</div>
                         </div>
                       </div>
                     )}
 
                     {selectedRequest.location_notes && (
                       <div className="flex items-start">
-                        <MessageCircle className="h-5 w-5 text-gray-400 mr-3 mt-0.5" />
+                        <MessageCircle className="h-5 w-5 text-gray-400 dark:text-gray-500 mr-3 mt-0.5" />
                         <div>
-                          <div className="text-sm text-gray-600">Notas de ubicación</div>
-                          <div className="font-medium">{selectedRequest.location_notes}</div>
+                          <div className="text-sm text-gray-600 dark:text-gray-400">Notas de ubicación</div>
+                          <div className="font-medium text-gray-900 dark:text-white">{selectedRequest.location_notes}</div>
                         </div>
                       </div>
                     )}
@@ -849,82 +854,82 @@ const MechanicDashboard: React.FC = () => {
 
                         <div className="flex items-center">
                           <div className="h-5 w-5 mr-3 flex items-center justify-center">
-                            <span className="text-gray-400 text-xs font-mono">🏷️</span>
+                            <span className="text-gray-400 dark:text-gray-500 text-xs font-mono">🏷️</span>
                           </div>
                           <div>
-                            <div className="text-sm text-gray-600">Placa</div>
-                            <div className="font-medium">{selectedRequest.vehicle.license_plate}</div>
+                            <div className="text-sm text-gray-600 dark:text-gray-400">Placa</div>
+                            <div className="font-medium text-gray-900 dark:text-white">{selectedRequest.vehicle.license_plate}</div>
                           </div>
                         </div>
 
                         <div className="flex items-center">
                           <div className="h-5 w-5 mr-3 flex items-center justify-center">
-                            <span className="text-gray-400 text-xs">🎨</span>
+                            <span className="text-gray-400 dark:text-gray-500 text-xs">🎨</span>
                           </div>
                           <div>
-                            <div className="text-sm text-gray-600">Color</div>
-                            <div className="font-medium capitalize">{selectedRequest.vehicle.color}</div>
+                            <div className="text-sm text-gray-600 dark:text-gray-400">Color</div>
+                            <div className="font-medium text-gray-900 dark:text-white capitalize">{selectedRequest.vehicle.color}</div>
                           </div>
                         </div>
 
                         <div className="flex items-center">
                           <div className="h-5 w-5 mr-3 flex items-center justify-center">
-                            <span className="text-gray-400 text-xs">⚙️</span>
+                            <span className="text-gray-400 dark:text-gray-500 text-xs">⚙️</span>
                           </div>
                           <div>
-                            <div className="text-sm text-gray-600">Transmisión</div>
-                            <div className="font-medium capitalize">{selectedRequest.vehicle.transmission_type}</div>
+                            <div className="text-sm text-gray-600 dark:text-gray-400">Transmisión</div>
+                            <div className="font-medium text-gray-900 dark:text-white capitalize">{selectedRequest.vehicle.transmission_type}</div>
                           </div>
                         </div>
 
                         <div className="flex items-center">
                           <div className="h-5 w-5 mr-3 flex items-center justify-center">
-                            <span className="text-gray-400 text-xs">⛽</span>
+                            <span className="text-gray-400 dark:text-gray-500 text-xs">⛽</span>
                           </div>
                           <div>
-                            <div className="text-sm text-gray-600">Combustible</div>
-                            <div className="font-medium capitalize">{selectedRequest.vehicle.fuel_type}</div>
+                            <div className="text-sm text-gray-600 dark:text-gray-400">Combustible</div>
+                            <div className="font-medium text-gray-900 dark:text-white capitalize">{selectedRequest.vehicle.fuel_type}</div>
                           </div>
                         </div>
 
                         <div className="flex items-center">
                           <div className="h-5 w-5 mr-3 flex items-center justify-center">
-                            <span className="text-gray-400 text-xs">📊</span>
+                            <span className="text-gray-400 dark:text-gray-500 text-xs">📊</span>
                           </div>
                           <div>
-                            <div className="text-sm text-gray-600">Kilometraje</div>
-                            <div className="font-medium">{selectedRequest.vehicle.mileage?.toLocaleString() || 'No especificado'} km</div>
+                            <div className="text-sm text-gray-600 dark:text-gray-400">Kilometraje</div>
+                            <div className="font-medium text-gray-900 dark:text-white">{selectedRequest.vehicle.mileage?.toLocaleString() || 'No especificado'} km</div>
                           </div>
                         </div>
 
                         {selectedRequest.vehicle.engine_size && (
                           <div className="flex items-center">
                             <div className="h-5 w-5 mr-3 flex items-center justify-center">
-                              <span className="text-gray-400 text-xs">🔧</span>
+                              <span className="text-gray-400 dark:text-gray-500 text-xs">🔧</span>
                             </div>
                             <div>
-                              <div className="text-sm text-gray-600">Motor</div>
-                              <div className="font-medium">{selectedRequest.vehicle.engine_size}</div>
+                              <div className="text-sm text-gray-600 dark:text-gray-400">Motor</div>
+                              <div className="font-medium text-gray-900 dark:text-white">{selectedRequest.vehicle.engine_size}</div>
                             </div>
                           </div>
                         )}
 
                         {selectedRequest.vehicle.notes && (
-                          <div className="mt-3 p-3 bg-blue-50 rounded-lg">
-                            <div className="text-sm text-blue-800 font-medium mb-1">Notas del vehículo:</div>
-                            <div className="text-sm text-blue-700">{selectedRequest.vehicle.notes}</div>
+                          <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                            <div className="text-sm text-blue-800 dark:text-blue-300 font-medium mb-1">Notas del vehículo:</div>
+                            <div className="text-sm text-blue-700 dark:text-blue-200">{selectedRequest.vehicle.notes}</div>
                           </div>
                         )}
 
                         <button
                           onClick={() => setShowVehicleDetails(true)}
-                          className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
+                          className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-200 font-medium"
                         >
                           Ver detalles completos del vehículo →
                         </button>
                       </>
                     ) : (
-                      <div className="text-sm text-gray-500 italic">
+                      <div className="text-sm text-gray-500 dark:text-gray-400 italic">
                         No se especificó vehículo para este servicio
                       </div>
                     )}
@@ -932,67 +937,67 @@ const MechanicDashboard: React.FC = () => {
 
                   {/* Información del Servicio */}
                   <div className="space-y-4">
-                    <h4 className="font-semibold text-gray-900">Ubicación y Distancia</h4>
+                    <h4 className="font-semibold text-gray-900 dark:text-white">Ubicación y Distancia</h4>
                     
                     {selectedRequest.location_address && (
                       <div className="flex items-start">
-                        <MapPin className="h-5 w-5 text-gray-400 mr-3 mt-0.5" />
+                        <MapPin className="h-5 w-5 text-gray-400 dark:text-gray-500 mr-3 mt-0.5" />
                         <div>
-                          <div className="text-sm text-gray-600">Dirección</div>
-                          <div className="font-medium">{selectedRequest.location_address}</div>
+                          <div className="text-sm text-gray-600 dark:text-gray-400">Dirección</div>
+                          <div className="font-medium text-gray-900 dark:text-white">{selectedRequest.location_address}</div>
                         </div>
                       </div>
                     )}
 
                     {selectedRequest.location_notes && (
                       <div className="flex items-start">
-                        <MessageCircle className="h-5 w-5 text-gray-400 mr-3 mt-0.5" />
+                        <MessageCircle className="h-5 w-5 text-gray-400 dark:text-gray-500 mr-3 mt-0.5" />
                         <div>
-                          <div className="text-sm text-gray-600">Notas de ubicación</div>
-                          <div className="font-medium text-sm">{selectedRequest.location_notes}</div>
+                          <div className="text-sm text-gray-600 dark:text-gray-400">Notas de ubicación</div>
+                          <div className="font-medium text-gray-900 dark:text-white text-sm">{selectedRequest.location_notes}</div>
                         </div>
                       </div>
                     )}
 
                     {/* Información de distancia */}
                     {mechanicLocation && selectedRequest.location_address ? (
-                      <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                      <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
                         <div className="flex items-center mb-2">
-                          <Navigation className="h-4 w-4 text-green-600 mr-2" />
-                          <span className="text-sm font-medium text-green-800">Información de viaje</span>
+                          <Navigation className="h-4 w-4 text-green-600 dark:text-green-400 mr-2" />
+                          <span className="text-sm font-medium text-green-800 dark:text-green-300">Información de viaje</span>
                         </div>
                         <div className="space-y-2 text-sm">
                           <div className="flex items-center justify-between">
-                            <span className="text-green-700">Tu ubicación:</span>
-                            <span className="text-green-600 text-xs">{mechanicLocation.address || 'Ubicación configurada'}</span>
+                            <span className="text-green-700 dark:text-green-400">Tu ubicación:</span>
+                            <span className="text-green-600 dark:text-green-300 text-xs">{mechanicLocation.address || 'Ubicación configurada'}</span>
                           </div>
                           <div className="flex items-center justify-between">
-                            <span className="text-green-700">Radio de viaje:</span>
-                            <span className="text-green-600 font-medium">{mechanicLocation.travel_radius_km || 10} km</span>
+                            <span className="text-green-700 dark:text-green-400">Radio de viaje:</span>
+                            <span className="text-green-600 dark:text-green-300 font-medium">{mechanicLocation.travel_radius_km || 10} km</span>
                           </div>
-                          <div className="pt-2 border-t border-green-200">
+                          <div className="pt-2 border-t border-green-200 dark:border-green-700">
                             {calculatingDistance ? (
-                              <div className="flex items-center text-green-700 text-xs">
+                              <div className="flex items-center text-green-700 dark:text-green-400 text-xs">
                                 <Loader className="h-3 w-3 animate-spin mr-1" />
                                 Calculando distancia...
                               </div>
                             ) : distanceError ? (
-                              <div className="text-red-600 text-xs">
+                              <div className="text-red-600 dark:text-red-400 text-xs">
                                 ❌ {distanceError}
                               </div>
                             ) : distanceInfo ? (
                               <div className="space-y-1">
                                 <div className="flex items-center justify-between">
-                                  <span className="text-green-700">Distancia:</span>
-                                  <span className="text-green-800 font-medium">{distanceInfo.distance.formatted}</span>
+                                  <span className="text-green-700 dark:text-green-400">Distancia:</span>
+                                  <span className="text-green-800 dark:text-green-300 font-medium">{distanceInfo.distance.formatted}</span>
                                 </div>
                                 <div className="flex items-center justify-between">
-                                  <span className="text-green-700">Estado:</span>
+                                  <span className="text-green-700 dark:text-green-400">Estado:</span>
                                   <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                                    distanceInfo.radius_validation.status === 'optimal' ? 'bg-green-100 text-green-800' :
-                                    distanceInfo.radius_validation.status === 'good' ? 'bg-blue-100 text-blue-800' :
-                                    distanceInfo.radius_validation.status === 'limit' ? 'bg-yellow-100 text-yellow-800' :
-                                    'bg-red-100 text-red-800'
+                                    distanceInfo.radius_validation.status === 'optimal' ? 'bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300' :
+                                    distanceInfo.radius_validation.status === 'good' ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300' :
+                                    distanceInfo.radius_validation.status === 'limit' ? 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-300' :
+                                    'bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-300'
                                   }`}>
                                     {distanceInfo.radius_validation.percentage}% del radio
                                   </span>
@@ -1140,16 +1145,16 @@ const MechanicDashboard: React.FC = () => {
       {/* Vehicle Details Modal */}
       {showVehicleDetails && selectedRequest?.vehicle && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
                 <div className="flex items-center gap-3">
-                  <Car className="h-6 w-6 text-blue-600" />
-                  <h2 className="text-xl font-semibold">Detalles Completos del Vehículo</h2>
+                  <Car className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Detalles Completos del Vehículo</h2>
                 </div>
                 <button
                   onClick={() => setShowVehicleDetails(false)}
-                  className="text-gray-500 hover:text-gray-700"
+                  className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
                 >
                   <XCircle className="h-6 w-6" />
                 </button>
@@ -1157,74 +1162,74 @@ const MechanicDashboard: React.FC = () => {
 
               <div className="space-y-6">
                 {/* Header del vehículo */}
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <h3 className="text-xl font-bold text-blue-900 mb-2">
+                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                  <h3 className="text-xl font-bold text-blue-900 dark:text-blue-300 mb-2">
                     {selectedRequest.vehicle.make} {selectedRequest.vehicle.model} {selectedRequest.vehicle.year}
                   </h3>
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <span className="text-blue-600 font-medium">Placa:</span>
-                      <span className="ml-2 font-mono">{selectedRequest.vehicle.license_plate}</span>
+                      <span className="text-blue-600 dark:text-blue-400 font-medium">Placa:</span>
+                      <span className="ml-2 font-mono text-gray-900 dark:text-gray-100">{selectedRequest.vehicle.license_plate}</span>
                     </div>
                     <div>
-                      <span className="text-blue-600 font-medium">Color:</span>
-                      <span className="ml-2 capitalize">{selectedRequest.vehicle.color}</span>
+                      <span className="text-blue-600 dark:text-blue-400 font-medium">Color:</span>
+                      <span className="ml-2 capitalize text-gray-900 dark:text-gray-100">{selectedRequest.vehicle.color}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Especificaciones técnicas */}
                 <div>
-                  <h4 className="font-semibold text-gray-900 mb-3">Especificaciones Técnicas</h4>
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-3">Especificaciones Técnicas</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="flex items-center">
-                      <span className="text-gray-400 mr-3">⚙️</span>
+                      <span className="text-gray-400 dark:text-gray-500 mr-3">⚙️</span>
                       <div>
-                        <div className="text-sm text-gray-600">Transmisión</div>
-                        <div className="font-medium capitalize">{selectedRequest.vehicle.transmission_type}</div>
+                        <div className="text-sm text-gray-600 dark:text-gray-400">Transmisión</div>
+                        <div className="font-medium text-gray-900 dark:text-white capitalize">{selectedRequest.vehicle.transmission_type}</div>
                       </div>
                     </div>
 
                     <div className="flex items-center">
-                      <span className="text-gray-400 mr-3">⛽</span>
+                      <span className="text-gray-400 dark:text-gray-500 mr-3">⛽</span>
                       <div>
-                        <div className="text-sm text-gray-600">Tipo de combustible</div>
-                        <div className="font-medium capitalize">{selectedRequest.vehicle.fuel_type}</div>
+                        <div className="text-sm text-gray-600 dark:text-gray-400">Tipo de combustible</div>
+                        <div className="font-medium text-gray-900 dark:text-white capitalize">{selectedRequest.vehicle.fuel_type}</div>
                       </div>
                     </div>
 
                     <div className="flex items-center">
-                      <span className="text-gray-400 mr-3">📊</span>
+                      <span className="text-gray-400 dark:text-gray-500 mr-3">📊</span>
                       <div>
-                        <div className="text-sm text-gray-600">Kilometraje</div>
-                        <div className="font-medium">{selectedRequest.vehicle.mileage?.toLocaleString() || 'No especificado'} km</div>
+                        <div className="text-sm text-gray-600 dark:text-gray-400">Kilometraje</div>
+                        <div className="font-medium text-gray-900 dark:text-white">{selectedRequest.vehicle.mileage?.toLocaleString() || 'No especificado'} km</div>
                       </div>
                     </div>
 
                     {selectedRequest.vehicle.engine_size && (
                       <div className="flex items-center">
-                        <span className="text-gray-400 mr-3">🔧</span>
+                        <span className="text-gray-400 dark:text-gray-500 mr-3">🔧</span>
                         <div>
-                          <div className="text-sm text-gray-600">Motor</div>
-                          <div className="font-medium">{selectedRequest.vehicle.engine_size}</div>
+                          <div className="text-sm text-gray-600 dark:text-gray-400">Motor</div>
+                          <div className="font-medium text-gray-900 dark:text-white">{selectedRequest.vehicle.engine_size}</div>
                         </div>
                       </div>
                     )}
 
                     <div className="flex items-center">
-                      <span className="text-gray-400 mr-3">🗓️</span>
+                      <span className="text-gray-400 dark:text-gray-500 mr-3">🗓️</span>
                       <div>
-                        <div className="text-sm text-gray-600">Registrado</div>
-                        <div className="font-medium">{formatDate(selectedRequest.vehicle.created_at)}</div>
+                        <div className="text-sm text-gray-600 dark:text-gray-400">Registrado</div>
+                        <div className="font-medium text-gray-900 dark:text-white">{formatDate(selectedRequest.vehicle.created_at)}</div>
                       </div>
                     </div>
 
                     {selectedRequest.vehicle.last_service_date && (
                       <div className="flex items-center">
-                        <span className="text-gray-400 mr-3">🔧</span>
+                        <span className="text-gray-400 dark:text-gray-500 mr-3">🔧</span>
                         <div>
-                          <div className="text-sm text-gray-600">Último servicio</div>
-                          <div className="font-medium">{formatDate(selectedRequest.vehicle.last_service_date)}</div>
+                          <div className="text-sm text-gray-600 dark:text-gray-400">Último servicio</div>
+                          <div className="font-medium text-gray-900 dark:text-white">{formatDate(selectedRequest.vehicle.last_service_date)}</div>
                         </div>
                       </div>
                     )}
@@ -1234,10 +1239,10 @@ const MechanicDashboard: React.FC = () => {
                 {/* VIN */}
                 {selectedRequest.vehicle.vin && (
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Información Adicional</h4>
-                    <div className="bg-gray-50 border rounded-lg p-3">
-                      <div className="text-sm text-gray-600">Número VIN</div>
-                      <div className="font-mono text-sm bg-white border rounded px-2 py-1 mt-1">
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Información Adicional</h4>
+                    <div className="bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-3">
+                      <div className="text-sm text-gray-600 dark:text-gray-400">Número VIN</div>
+                      <div className="font-mono text-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white rounded px-2 py-1 mt-1">
                         {selectedRequest.vehicle.vin}
                       </div>
                     </div>
@@ -1247,17 +1252,17 @@ const MechanicDashboard: React.FC = () => {
                 {/* Notas del vehículo */}
                 {selectedRequest.vehicle.notes && (
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Notas del Propietario</h4>
-                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                      <div className="text-sm text-amber-800">{selectedRequest.vehicle.notes}</div>
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Notas del Propietario</h4>
+                    <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+                      <div className="text-sm text-amber-800 dark:text-amber-300">{selectedRequest.vehicle.notes}</div>
                     </div>
                   </div>
                 )}
 
                 {/* Recomendaciones para el mecánico */}
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                  <h4 className="font-semibold text-green-800 mb-2">💡 Información Útil para el Servicio</h4>
-                  <div className="text-sm text-green-700 space-y-1">
+                <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+                  <h4 className="font-semibold text-green-800 dark:text-green-300 mb-2">💡 Información Útil para el Servicio</h4>
+                  <div className="text-sm text-green-700 dark:text-green-200 space-y-1">
                     <p>• <strong>Transmisión {selectedRequest.vehicle.transmission_type}:</strong> Considerar herramientas específicas</p>
                     <p>• <strong>Combustible {selectedRequest.vehicle.fuel_type}:</strong> Verificar compatibilidad de repuestos</p>
                     <p>• <strong>Kilometraje:</strong> {selectedRequest.vehicle.mileage?.toLocaleString() || 'No especificado'} km - evaluar desgaste</p>
@@ -1268,13 +1273,13 @@ const MechanicDashboard: React.FC = () => {
                 </div>
 
                 {/* Estado del vehículo */}
-                <div className="border-t pt-4">
+                <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Estado del vehículo:</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">Estado del vehículo:</span>
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                       selectedRequest.vehicle.is_active 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
+                        ? 'bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300' 
+                        : 'bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-300'
                     }`}>
                       {selectedRequest.vehicle.is_active ? 'Activo' : 'Inactivo'}
                     </span>
@@ -1282,10 +1287,10 @@ const MechanicDashboard: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex justify-end mt-6 pt-4 border-t">
+              <div className="flex justify-end mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
                 <button
                   onClick={() => setShowVehicleDetails(false)}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  className="px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-800"
                 >
                   Cerrar
                 </button>

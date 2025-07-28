@@ -6,6 +6,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\MechanicProfileController;
+use App\Http\Controllers\ClientProfileController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\ServiceRequestController;
 use App\Http\Controllers\LocationController;
@@ -88,6 +89,19 @@ Route::middleware('auth:sanctum')->group(function () {
     });
     
     Route::get('/mechanics/{mechanicProfile}', [MechanicProfileController::class, 'show']);
+
+    // ==========================================
+    // PERFILES DE CLIENTES
+    // ==========================================
+    // Solo clientes pueden gestionar su propio perfil
+    Route::middleware(['role:cliente'])->group(function () {
+        Route::get('/client/profile', [ClientProfileController::class, 'show']);
+        Route::put('/client/profile', [ClientProfileController::class, 'update']);
+        Route::get('/client/dashboard-config', [ClientProfileController::class, 'getDashboardConfig']);
+        Route::put('/client/dashboard-config', [ClientProfileController::class, 'updateDashboardConfig']);
+        Route::get('/client/stats', [ClientProfileController::class, 'getStats']);
+        Route::post('/client/loyalty-points', [ClientProfileController::class, 'manageLoyaltyPoints']);
+    });
 
     // ==========================================
     // SERVICIOS Y SOLICITUDES

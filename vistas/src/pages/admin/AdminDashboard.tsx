@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { userManagementAPI, dashboardAPI } from '../../services/api';
 import type { User, DashboardStats } from '../../types';
 import NavigationHeader from '../../components/NavigationHeader';
+import ExcelJS from 'exceljs';
 import { 
   Users,
   UserCheck,
@@ -87,6 +88,164 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
+  const handleExportData = async () => {
+    try {
+      // Crear un nuevo libro de trabajo
+      const workbook = new ExcelJS.Workbook();
+      
+      // Configurar metadatos del archivo
+      workbook.creator = 'RuedaExpress Admin';
+      workbook.lastModifiedBy = 'Sistema Administrativo';
+      workbook.created = new Date();
+      workbook.modified = new Date();
+
+      // Hoja 1: Estadísticas Generales
+      const statsSheet = workbook.addWorksheet('Estadísticas');
+      
+      // Agregar encabezados con estilo
+      const statsHeaders = ['Métrica', 'Valor'];
+      const headerRow = statsSheet.addRow(statsHeaders);
+      headerRow.font = { bold: true };
+      headerRow.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FF4F46E5' }
+      };
+      headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+
+      // Agregar datos de estadísticas
+      const statsData = [
+        ['Total de Usuarios', stats?.total_users || 0],
+        ['Usuarios Activos', stats?.active_users || 0],
+        ['Clientes', stats?.client_users || 0],
+        ['Mecánicos', stats?.mechanic_users || 0],
+        ['Crecimiento (%)', stats?.growth_percentage || 0],
+        ['Registros Hoy', stats?.users_today || 0],
+        ['Registros Esta Semana', stats?.users_this_week || 0],
+        ['Registros Este Mes', stats?.users_this_month || 0],
+      ];
+
+      statsData.forEach(row => {
+        statsSheet.addRow(row);
+      });
+
+      // Ajustar ancho de columnas
+      statsSheet.getColumn(1).width = 25;
+      statsSheet.getColumn(2).width = 15;
+
+      // Hoja 2: Distribución de Roles
+      if (stats?.role_distribution) {
+        const rolesSheet = workbook.addWorksheet('Distribución de Roles');
+        
+        const rolesHeaders = ['Rol', 'Porcentaje'];
+        const rolesHeaderRow = rolesSheet.addRow(rolesHeaders);
+        rolesHeaderRow.font = { bold: true };
+        rolesHeaderRow.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FF10B981' }
+        };
+        rolesHeaderRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+
+        const rolesData = [
+          ['Administradores', stats.role_distribution.administradores || 0],
+          ['Mecánicos', stats.role_distribution.mecanicos || 0],
+          ['Clientes', stats.role_distribution.clientes || 0],
+        ];
+
+        rolesData.forEach(row => {
+          rolesSheet.addRow(row);
+        });
+
+        rolesSheet.getColumn(1).width = 20;
+        rolesSheet.getColumn(2).width = 15;
+      }
+
+      // Hoja 3: Lista de Usuarios
+      const usersSheet = workbook.addWorksheet('Usuarios');
+      
+      const usersHeaders = ['ID', 'Nombre', 'Email', 'Teléfono', 'Roles', 'Estado', 'Fecha de Registro'];
+      const usersHeaderRow = usersSheet.addRow(usersHeaders);
+      usersHeaderRow.font = { bold: true };
+      usersHeaderRow.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FF8B5CF6' }
+      };
+      usersHeaderRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+
+      filteredUsers.forEach(user => {
+        usersSheet.addRow([
+          user.id,
+          user.name,
+          user.email,
+          user.phone || 'N/A',
+          getUserRole(user),
+          user.is_active ? 'Activo' : 'Inactivo',
+          formatDate(user.created_at)
+        ]);
+      });
+
+      // Ajustar ancho de columnas
+      usersSheet.getColumn(1).width = 8;
+      usersSheet.getColumn(2).width = 25;
+      usersSheet.getColumn(3).width = 30;
+      usersSheet.getColumn(4).width = 15;
+      usersSheet.getColumn(5).width = 15;
+      usersSheet.getColumn(6).width = 12;
+      usersSheet.getColumn(7).width = 18;
+
+      // Hoja 4: Usuarios Recientes
+      if (stats?.recent_users && stats.recent_users.length > 0) {
+        const recentUsersSheet = workbook.addWorksheet('Usuarios Recientes');
+        
+        const recentHeaders = ['Nombre', 'Email', 'Fecha de Registro'];
+        const recentHeaderRow = recentUsersSheet.addRow(recentHeaders);
+        recentHeaderRow.font = { bold: true };
+        recentHeaderRow.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FFF59E0B' }
+        };
+        recentHeaderRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+
+        stats.recent_users.forEach(user => {
+          recentUsersSheet.addRow([
+            user.name,
+            user.email,
+            formatDate(user.created_at)
+          ]);
+        });
+
+        recentUsersSheet.getColumn(1).width = 25;
+        recentUsersSheet.getColumn(2).width = 30;
+        recentUsersSheet.getColumn(3).width = 18;
+      }
+
+      // Generar el archivo
+      const today = new Date();
+      const fileName = `RuedaExpress_Dashboard_${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}.xlsx`;
+      
+      // Escribir el archivo
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      
+      // Crear enlace de descarga
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      link.click();
+      
+      // Limpiar URL temporal
+      window.URL.revokeObjectURL(url);
+      
+      setSuccess('Datos exportados exitosamente');
+    } catch (err: any) {
+      setError('Error al exportar datos: ' + err.message);
+    }
+  };
+
   const filteredUsers = users.filter(user => {
     const matchesSearch = !filters.search || 
       user.name.toLowerCase().includes(filters.search.toLowerCase()) ||
@@ -125,7 +284,7 @@ const AdminDashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <NavigationHeader title="Dashboard Administrativo" showBack={true} customBackPath="/" />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -133,34 +292,38 @@ const AdminDashboard: React.FC = () => {
           {/* Header */}
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Panel de Control</h1>
-              <p className="text-gray-600">Gestión completa del sistema RuedaExpress</p>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Panel de Control</h1>
+              <p className="text-gray-600 dark:text-gray-300">Gestión completa del sistema RuedaExpress</p>
             </div>
             
             <div className="flex gap-2">
-              <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2">
+              <button 
+                onClick={handleExportData}
+                className="bg-green-600 dark:bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-700 dark:hover:bg-green-600 flex items-center gap-2 disabled:opacity-50 transition-colors duration-200"
+                disabled={isLoading}
+              >
                 <Download className="h-4 w-4" />
-                Exportar Datos
+                {isLoading ? 'Exportando...' : 'Exportar Datos'}
               </button>
             </div>
           </div>
 
       {/* Messages */}
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg flex items-center">
           <AlertCircle className="h-5 w-5 mr-2" />
           {error}
-          <button onClick={() => setError('')} className="ml-auto">
+          <button onClick={() => setError('')} className="ml-auto text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300">
             <XCircle className="h-5 w-5" />
           </button>
         </div>
       )}
 
       {success && (
-        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex items-center">
+        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 text-green-700 dark:text-green-400 px-4 py-3 rounded-lg flex items-center">
           <CheckCircle className="h-5 w-5 mr-2" />
           {success}
-          <button onClick={() => setSuccess('')} className="ml-auto">
+          <button onClick={() => setSuccess('')} className="ml-auto text-green-500 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300">
             <XCircle className="h-5 w-5" />
           </button>
         </div>
@@ -171,62 +334,62 @@ const AdminDashboard: React.FC = () => {
         <>
           {/* Estadísticas Principales */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-white p-6 rounded-lg shadow border">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow border border-gray-200 dark:border-gray-700">
               <div className="flex items-center">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <Users className="h-6 w-6 text-blue-600" />
+                <div className="p-2 bg-blue-100 dark:bg-blue-900/50 rounded-lg">
+                  <Users className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm text-gray-600">Total Usuarios</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.total_users}</p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Total Usuarios</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total_users}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
                     {stats.active_users} activos
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white p-6 rounded-lg shadow border">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow border border-gray-200 dark:border-gray-700">
               <div className="flex items-center">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <UserCheck className="h-6 w-6 text-green-600" />
+                <div className="p-2 bg-green-100 dark:bg-green-900/50 rounded-lg">
+                  <UserCheck className="h-6 w-6 text-green-600 dark:text-green-400" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm text-gray-600">Clientes</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.client_users}</p>
-                  <p className="text-xs text-gray-500">
-                    {stats.role_distribution.clientes}% del total
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Clientes</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.client_users}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    {stats.role_distribution?.clientes || 0}% del total
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white p-6 rounded-lg shadow border">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow border border-gray-200 dark:border-gray-700">
               <div className="flex items-center">
-                <div className="p-2 bg-purple-100 rounded-lg">
-                  <Wrench className="h-6 w-6 text-purple-600" />
+                <div className="p-2 bg-purple-100 dark:bg-purple-900/50 rounded-lg">
+                  <Wrench className="h-6 w-6 text-purple-600 dark:text-purple-400" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm text-gray-600">Mecánicos</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.mechanic_users}</p>
-                  <p className="text-xs text-gray-500">
-                    {stats.role_distribution.mecanicos}% del total
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Mecánicos</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.mechanic_users}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    {stats.role_distribution?.mecanicos || 0}% del total
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white p-6 rounded-lg shadow border">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow border border-gray-200 dark:border-gray-700">
               <div className="flex items-center">
-                <div className="p-2 bg-orange-100 rounded-lg">
-                  <TrendingUp className="h-6 w-6 text-orange-600" />
+                <div className="p-2 bg-orange-100 dark:bg-orange-900/50 rounded-lg">
+                  <TrendingUp className="h-6 w-6 text-orange-600 dark:text-orange-400" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm text-gray-600">Crecimiento</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {stats.growth_percentage > 0 ? '+' : ''}{stats.growth_percentage}%
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Crecimiento</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {(stats.growth_percentage || 0) > 0 ? '+' : ''}{stats.growth_percentage || 0}%
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
                     vs mes anterior
                   </p>
                 </div>
@@ -262,21 +425,21 @@ const AdminDashboard: React.FC = () => {
                     <div className="w-3 h-3 bg-purple-500 rounded mr-2"></div>
                     Administradores
                   </span>
-                  <span className="text-sm font-semibold">{stats.role_distribution.administradores}%</span>
+                  <span className="text-sm font-semibold">{stats.role_distribution?.administradores || 0}%</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600 flex items-center">
                     <div className="w-3 h-3 bg-blue-500 rounded mr-2"></div>
                     Mecánicos
                   </span>
-                  <span className="text-sm font-semibold">{stats.role_distribution.mecanicos}%</span>
+                  <span className="text-sm font-semibold">{stats.role_distribution?.mecanicos || 0}%</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600 flex items-center">
                     <div className="w-3 h-3 bg-green-500 rounded mr-2"></div>
                     Clientes
                   </span>
-                  <span className="text-sm font-semibold">{stats.role_distribution.clientes}%</span>
+                  <span className="text-sm font-semibold">{stats.role_distribution?.clientes || 0}%</span>
                 </div>
               </div>
             </div>
@@ -284,7 +447,7 @@ const AdminDashboard: React.FC = () => {
             <div className="bg-white p-6 rounded-lg shadow border">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Usuarios Recientes</h3>
               <div className="space-y-3 max-h-32 overflow-y-auto">
-                {stats.recent_users.map((user) => (
+                {(stats.recent_users || []).map((user) => (
                   <div key={user.id} className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-900">{user.name}</p>
@@ -357,29 +520,29 @@ const AdminDashboard: React.FC = () => {
       )}
 
       {/* User Management */}
-      <div className="bg-white rounded-lg shadow border">
-        <div className="p-6 border-b">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
           <div className="flex justify-between items-center">
-            <h2 className="text-lg font-semibold">Gestión de Usuarios</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Gestión de Usuarios</h2>
           </div>
 
           {/* Filters */}
           <div className="mt-4 grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
               <input
                 type="text"
                 placeholder="Buscar por nombre o email..."
                 value={filters.search}
                 onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
               />
             </div>
             
             <select
               value={filters.role}
               onChange={(e) => setFilters(prev => ({ ...prev, role: e.target.value }))}
-              className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200"
             >
               <option value="">Todos los roles</option>
               <option value="cliente">Cliente</option>
@@ -390,7 +553,7 @@ const AdminDashboard: React.FC = () => {
             <select
               value={filters.status}
               onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
-              className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200"
             >
               <option value="">Todos los estados</option>
               <option value="active">Activos</option>
@@ -399,7 +562,7 @@ const AdminDashboard: React.FC = () => {
             
             <button
               onClick={() => setFilters({ search: '', role: '', status: '' })}
-              className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 flex items-center justify-center gap-2"
+              className="bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500 flex items-center justify-center gap-2 transition-colors duration-200"
             >
               <Filter className="h-4 w-4" />
               Limpiar
@@ -410,42 +573,42 @@ const AdminDashboard: React.FC = () => {
         {/* Users Table */}
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usuario</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rol</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Registro</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Usuario</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Rol</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Estado</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Fecha Registro</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Acciones</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-600 bg-white dark:bg-gray-800">
               {filteredUsers.map((user) => (
-                <tr key={user.id}>
+                <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
-                      <div className="text-sm font-medium text-gray-900">{user.name}</div>
-                      <div className="text-sm text-gray-500">{user.email}</div>
+                      <div className="text-sm font-medium text-gray-900 dark:text-white">{user.name}</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">{user.email}</div>
                       {user.phone && (
-                        <div className="text-sm text-gray-500">{user.phone}</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">{user.phone}</div>
                       )}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm text-gray-900">
+                    <span className="text-sm text-gray-900 dark:text-white">
                       {getUserRole(user)}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
                       user.is_active 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
+                        ? 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300' 
+                        : 'bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-300'
                     }`}>
                       {user.is_active ? 'Activo' : 'Inactivo'}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                     {formatDate(user.created_at)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -455,21 +618,21 @@ const AdminDashboard: React.FC = () => {
                           setSelectedUser(user);
                           setShowUserModal(true);
                         }}
-                        className="text-indigo-600 hover:text-indigo-900"
+                        className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 transition-colors duration-200"
                       >
                         <Eye className="h-4 w-4" />
                       </button>
                       
                       <button
                         onClick={() => handleToggleUserStatus(user.id, user.is_active)}
-                        className={`${user.is_active ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900'}`}
+                        className={`transition-colors duration-200 ${user.is_active ? 'text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300' : 'text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300'}`}
                       >
                         {user.is_active ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
                       </button>
                       
                       <button
                         onClick={() => handleDeleteUser(user.id)}
-                        className="text-red-600 hover:text-red-900"
+                        className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 transition-colors duration-200"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>

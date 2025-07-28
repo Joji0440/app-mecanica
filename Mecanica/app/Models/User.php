@@ -71,6 +71,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Relación con el perfil de cliente
+     */
+    public function clientProfile(): HasOne
+    {
+        return $this->hasOne(ClientProfile::class);
+    }
+
+    /**
      * Relación con los vehículos del usuario
      */
     public function vehicles(): HasMany

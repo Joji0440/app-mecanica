@@ -9,6 +9,11 @@ import type {
   CreateVehicleRequest,
   MechanicProfile,
   CreateMechanicProfileRequest,
+  ClientProfile,
+  UpdateClientProfileRequest,
+  ClientStats,
+  DashboardLayoutConfig,
+  LoyaltyPointsData,
   ServiceRequest,
   ExtendedServiceRequest,
   ServiceRequestCreate,
@@ -17,8 +22,7 @@ import type {
   LocationUpdate,
   NearbyMechanicSearchParams,
   DashboardStats,
-  MechanicStats,
-  ClientStats
+  MechanicStats
 } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://192.168.0.100:8000/api';
@@ -203,6 +207,63 @@ export const mechanicAPI = {
       data: MechanicProfile[];
       client_location: { latitude: string; longitude: string; search_radius: string };
     }>>('/mechanics/nearby', { params });
+    return response.data.data!;
+  },
+};
+
+// ==========================================
+// PERFILES DE CLIENTES
+// ==========================================
+export const clientAPI = {
+  // Obtener perfil del cliente actual
+  getProfile: async (): Promise<ApiResponse<ClientProfile>> => {
+    const response = await api.get<ApiResponse<ClientProfile>>('/client/profile');
+    return response.data;
+  },
+
+  // Actualizar perfil de cliente
+  updateProfile: async (profileData: UpdateClientProfileRequest): Promise<ClientProfile> => {
+    const response = await api.put<ApiResponse<ClientProfile>>('/client/profile', profileData);
+    return response.data.data!;
+  },
+
+  // Obtener configuración del dashboard
+  getDashboardConfig: async (): Promise<DashboardLayoutConfig> => {
+    const response = await api.get<ApiResponse<DashboardLayoutConfig>>('/client/dashboard-config');
+    return response.data.data!;
+  },
+
+  // Actualizar configuración del dashboard
+  updateDashboardConfig: async (config: {
+    dashboard_layout: DashboardLayoutConfig;
+    theme_preference?: string;
+    language_preference?: string;
+  }): Promise<DashboardLayoutConfig> => {
+    const response = await api.put<ApiResponse<DashboardLayoutConfig>>('/client/dashboard-config', config);
+    return response.data.data!;
+  },
+
+  // Obtener estadísticas del cliente
+  getStats: async (): Promise<ClientStats> => {
+    const response = await api.get<ApiResponse<ClientStats>>('/client/stats');
+    return response.data.data!;
+  },
+
+  // Obtener historial de puntos de lealtad
+  getLoyaltyPointsHistory: async (): Promise<LoyaltyPointsData> => {
+    const response = await api.post<ApiResponse<LoyaltyPointsData>>('/client/loyalty-points', {
+      action: 'history'
+    });
+    return response.data.data!;
+  },
+
+  // Usar puntos de lealtad
+  useLoyaltyPoints: async (points: number, reason: string): Promise<{ message: string; remaining_points: number }> => {
+    const response = await api.post<ApiResponse<{ message: string; remaining_points: number }>>('/client/loyalty-points', {
+      action: 'use',
+      points,
+      reason
+    });
     return response.data.data!;
   },
 };

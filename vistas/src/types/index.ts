@@ -178,6 +178,161 @@ export interface CreateMechanicProfileRequest {
 }
 
 // ==========================================
+// PERFILES DE CLIENTES
+// ==========================================
+
+export interface ClientProfile {
+  id: number;
+  user_id: number;
+  birth_date?: string;
+  gender?: 'male' | 'female' | 'other' | 'prefer_not_to_say';
+  occupation?: string;
+  bio?: string;
+  
+  // Contacto de emergencia
+  emergency_contact_name?: string;
+  emergency_contact_phone?: string;
+  emergency_contact_relationship?: string;
+  
+  // Preferencias de servicio
+  preferred_service_times?: PreferredServiceTimes;
+  communication_preference: 'phone' | 'email' | 'sms' | 'app_notification';
+  notifications_enabled: boolean;
+  email_notifications: boolean;
+  sms_notifications: boolean;
+  
+  // Configuración de servicios
+  preferred_max_cost?: number;
+  preferred_mechanic_radius: number;
+  service_preferences?: ServicePreferences;
+  auto_accept_quotes: boolean;
+  
+  // Ubicación laboral
+  work_address?: string;
+  work_city?: string;
+  work_latitude?: number;
+  work_longitude?: number;
+  
+  // Estadísticas
+  total_services_requested: number;
+  total_services_completed: number;
+  total_spent: number;
+  average_rating_given: number;
+  total_ratings_given: number;
+  
+  // Configuración de cuenta
+  account_type: 'basic' | 'premium' | 'vip';
+  premium_expires_at?: string;
+  loyalty_points?: LoyaltyPointsData;
+  
+  // Personalización
+  theme_preference: 'light' | 'dark' | 'auto';
+  language_preference: string;
+  dashboard_layout?: DashboardLayoutConfig;
+  
+  // Privacidad
+  profile_visibility: boolean;
+  show_location: boolean;
+  allow_mechanic_recommendations: boolean;
+  
+  // Campos calculados
+  age?: number;
+  is_premium: boolean;
+  formatted_total_spent: string;
+  service_completion_rate: number;
+  
+  created_at: string;
+  updated_at: string;
+  user?: User;
+}
+
+export interface PreferredServiceTimes {
+  [day: string]: ServiceTimeSlot[];
+}
+
+export interface ServiceTimeSlot {
+  start: string;
+  end: string;
+  flexible?: boolean;
+}
+
+export interface ServicePreferences {
+  preferred_time?: 'morning' | 'afternoon' | 'evening' | 'flexible';
+  preferred_location?: 'home' | 'work' | 'mechanic_shop' | 'any';
+  special_instructions?: string;
+  preferred_contact_method?: 'phone' | 'email' | 'app';
+}
+
+export interface LoyaltyPointsData {
+  available: number;
+  total_earned: number;
+  total_used: number;
+  history: LoyaltyPointTransaction[];
+}
+
+export interface LoyaltyPointTransaction {
+  points: number;
+  reason: string;
+  date: string;
+  type: 'earned' | 'used';
+}
+
+export interface DashboardLayoutConfig {
+  widgets: {
+    [key: string]: {
+      enabled: boolean;
+      position: number;
+    };
+  };
+  theme?: string;
+  language?: string;
+  compact_mode?: boolean;
+}
+
+export interface ClientStats {
+  total_services_requested: number;
+  total_services_completed: number;
+  completion_rate: number;
+  total_spent: number;
+  formatted_total_spent: string;
+  average_rating_given: number;
+  total_ratings_given: number;
+  loyalty_points: number;
+  account_type: string;
+  is_premium: boolean;
+  age?: number;
+}
+
+export interface UpdateClientProfileRequest {
+  birth_date?: string;
+  gender?: 'male' | 'female' | 'other' | 'prefer_not_to_say';
+  occupation?: string;
+  bio?: string;
+  emergency_contact_name?: string;
+  emergency_contact_phone?: string;
+  emergency_contact_relationship?: string;
+  preferred_service_times?: PreferredServiceTimes;
+  communication_preference?: 'phone' | 'email' | 'sms' | 'app_notification';
+  notifications_enabled?: boolean;
+  email_notifications?: boolean;
+  sms_notifications?: boolean;
+  preferred_max_cost?: number;
+  preferred_mechanic_radius?: number;
+  service_preferences?: ServicePreferences;
+  auto_accept_quotes?: boolean;
+  work_address?: string;
+  work_city?: string;
+  work_latitude?: number;
+  work_longitude?: number;
+  theme_preference?: 'light' | 'dark' | 'auto';
+  language_preference?: string;
+  dashboard_layout?: DashboardLayoutConfig;
+  profile_visibility?: boolean;
+  show_location?: boolean;
+  allow_mechanic_recommendations?: boolean;
+}
+
+// ==========================================
 // SERVICIOS Y SOLICITUDES
 // ==========================================
 
@@ -345,39 +500,35 @@ export interface AuthContextType {
 // ==========================================
 
 export interface DashboardStats {
-  // Contadores principales
-  total_users: number;
-  admin_users: number;
-  mechanic_users: number;
-  client_users: number;
-  active_users: number;
+  // Para mecánicos
+  pending_requests?: number;
+  active_services?: number;
+  completed_services?: number;
+  total_earnings?: number;
+  average_rating?: number;
+  total_reviews?: number;
   
-  // Estadísticas temporales
-  users_today: number;
-  users_this_week: number;
-  users_this_month: number;
-  users_last_month: number;
-  
-  // Análisis de crecimiento
-  growth_percentage: number;
-  is_growing: boolean;
-  
-  // Distribución de roles
-  role_distribution: {
+  // Para administradores
+  total_users?: number;
+  admin_users?: number;
+  mechanic_users?: number;
+  client_users?: number;
+  active_users?: number;
+  users_today?: number;
+  users_this_week?: number;
+  users_this_month?: number;
+  users_last_month?: number;
+  growth_percentage?: number;
+  is_growing?: boolean;
+  role_distribution?: {
     administradores: number;
     mecanicos: number;
     clientes: number;
   };
-  
-  // Datos adicionales
-  recent_users: User[];
-  
-  // Estadísticas del sistema (futuro)
-  total_vehicles: number;
-  total_services: number;
-  active_services: number;
-  completed_services: number;
-  monthly_revenue: number;
+  recent_users?: User[];
+  total_vehicles?: number;
+  total_services?: number;
+  monthly_revenue?: number;
 }
 
 export interface MechanicStats {
@@ -387,12 +538,4 @@ export interface MechanicStats {
   total_earnings: number;
   active_requests: number;
   completion_rate: number;
-}
-
-export interface ClientStats {
-  total_vehicles: number;
-  total_services: number;
-  services_this_month: number;
-  total_spent: number;
-  favorite_mechanics: number;
 }

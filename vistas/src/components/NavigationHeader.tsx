@@ -11,7 +11,6 @@ import {
   Crown,
   Car,
   Wrench,
-  Settings,
   Moon,
   Sun
 } from 'lucide-react';
@@ -133,7 +132,7 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({
             {(showBack || location.pathname !== '/') && (
               <button
                 onClick={handleBack}
-                className="p-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+                className="p-2 rounded-lg text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                 title="Volver"
               >
                 <ArrowLeft className="h-5 w-5" />
@@ -142,17 +141,17 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({
 
             {/* Logo */}
             <Link to="/" className="flex items-center space-x-2">
-              <div className="bg-blue-600 p-2 rounded-lg">
+              <div className="bg-blue-600 dark:bg-blue-500 p-2 rounded-lg">
                 <Wrench className="h-6 w-6 text-white" />
               </div>
-              <span className="text-xl font-bold text-gray-900">RuedaExpress</span>
+              <span className="text-xl font-bold text-gray-900 dark:text-white">RuedaExpress</span>
             </Link>
 
             {/* Título de página */}
             {title && (
               <>
-                <div className="h-6 w-px bg-gray-300"></div>
-                <h1 className="text-lg font-semibold text-gray-900">{title}</h1>
+                <div className="h-6 w-px bg-gray-300 dark:bg-gray-600"></div>
+                <h1 className="text-lg font-semibold text-gray-900 dark:text-white">{title}</h1>
               </>
             )}
           </div>
@@ -164,7 +163,7 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({
               {/* Botón Home */}
               <Link
                 to="/"
-                className="px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors flex items-center space-x-1"
+                className="px-3 py-2 rounded-md text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center space-x-1"
               >
                 <Home className="h-4 w-4" />
                 <span>Inicio</span>
@@ -173,7 +172,7 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({
               {/* Dashboard según rol */}
               <Link
                 to={getDashboardPath()}
-                className="px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors flex items-center space-x-1"
+                className="px-3 py-2 rounded-md text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center space-x-1"
               >
                 {getRoleIcon()}
                 <span>Mi Panel</span>
@@ -184,17 +183,10 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({
                 <>
                   <Link
                     to="/admin/users"
-                    className="px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors flex items-center space-x-1"
+                    className="px-3 py-2 rounded-md text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center space-x-1"
                   >
                     <Users className="h-4 w-4" />
                     <span>Usuarios</span>
-                  </Link>
-                  <Link
-                    to="/admin/settings"
-                    className="px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors flex items-center space-x-1"
-                  >
-                    <Settings className="h-4 w-4" />
-                    <span>Config</span>
                   </Link>
                 </>
               )}
@@ -203,18 +195,18 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({
               {isClient && (
                 <>
                   <Link
-                    to="/client/vehicles"
-                    className="px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors flex items-center space-x-1"
-                  >
-                    <Car className="h-4 w-4" />
-                    <span>Vehículos</span>
-                  </Link>
-                  <Link
-                    to="/client/services"
-                    className="px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors flex items-center space-x-1"
+                    to="/services"
+                    className="px-3 py-2 rounded-md text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center space-x-1"
                   >
                     <Wrench className="h-4 w-4" />
                     <span>Servicios</span>
+                  </Link>
+                  <Link
+                    to="/client-profile"
+                    className="px-3 py-2 rounded-md text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center space-x-1"
+                  >
+                    <User className="h-4 w-4" />
+                    <span>Perfil</span>
                   </Link>
                 </>
               )}
@@ -223,15 +215,8 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({
               {isMechanic && (
                 <>
                   <Link
-                    to="/mechanic/services"
-                    className="px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors flex items-center space-x-1"
-                  >
-                    <Wrench className="h-4 w-4" />
-                    <span>Servicios</span>
-                  </Link>
-                  <Link
                     to="/mechanic/profile"
-                    className="px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors flex items-center space-x-1"
+                    className="px-3 py-2 rounded-md text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center space-x-1"
                   >
                     <User className="h-4 w-4" />
                     <span>Perfil</span>
@@ -248,10 +233,10 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({
               <>
                 {/* Información del usuario */}
                 <div className="hidden md:flex flex-col items-end">
-                  <span className="text-sm font-medium text-gray-900">{user.name}</span>
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">{user.name}</span>
                   <div className="flex items-center space-x-1">
                     {getRoleIcon()}
-                    <span className="text-xs text-gray-600">{getRoleText()}</span>
+                    <span className="text-xs text-gray-600 dark:text-gray-400">{getRoleText()}</span>
                   </div>
                 </div>
 
@@ -278,7 +263,7 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({
                 {/* Botón de logout */}
                 <button
                   onClick={handleLogout}
-                  className="p-2 rounded-lg text-gray-600 hover:text-red-600 hover:bg-red-50 transition-colors"
+                  className="p-2 rounded-lg text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                   title="Cerrar Sesión"
                 >
                   <LogOut className="h-5 w-5" />
@@ -289,13 +274,13 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({
               <div className="flex items-center space-x-2">
                 <Link
                   to="/login"
-                  className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+                  className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
                 >
                   Iniciar Sesión
                 </Link>
                 <Link
                   to="/register"
-                  className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
+                  className="bg-blue-600 dark:bg-blue-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors"
                 >
                   Registrarse
                 </Link>
@@ -307,34 +292,34 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({
 
       {/* Navegación móvil */}
       {user && (
-        <div className="md:hidden border-t border-gray-200 bg-gray-50 px-4 py-3">
+        <div className="md:hidden border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               {getRoleIcon()}
               <div>
-                <div className="text-sm font-medium text-gray-900">{user.name}</div>
-                <div className="text-xs text-gray-600">{getRoleText()}</div>
+                <div className="text-sm font-medium text-gray-900 dark:text-white">{user.name}</div>
+                <div className="text-xs text-gray-600 dark:text-gray-400">{getRoleText()}</div>
               </div>
             </div>
             
             <div className="flex items-center space-x-2">
               <Link
                 to="/"
-                className="p-2 text-gray-600 hover:text-gray-900"
+                className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
                 title="Inicio"
               >
                 <Home className="h-5 w-5" />
               </Link>
               <Link
                 to={getDashboardPath()}
-                className="p-2 text-gray-600 hover:text-gray-900"
+                className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
                 title="Mi Panel"
               >
                 {getRoleIcon()}
               </Link>
               <button
                 onClick={handleLogout}
-                className="p-2 text-gray-600 hover:text-red-600"
+                className="p-2 text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
                 title="Cerrar Sesión"
               >
                 <LogOut className="h-5 w-5" />
